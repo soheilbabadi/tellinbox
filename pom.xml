@@ -83,6 +83,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
+		<!-- MinIO Client Dependency -->
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>8.5.7</version>
+		</dependency>
                 <!-- JWT Dependencies -->
                 <dependency>
                         <groupId>io.jsonwebtoken</groupId>

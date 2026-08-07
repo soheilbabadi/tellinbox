@@ -1,38 +1,39 @@
 ```
-# Java/Maven build artifacts
-target/
+# Compiled and build artifacts
 *.class
-*.jar
-*.war
-*.ear
+*.o
+*.obj
+*.out
+target/
 
 # Dependencies
-lib/
-libs/
+.m2/
+.gradle/
 
-# IDE files
-.vscode/
-.idea/
-*.iml
-*.ipr
-*.iws
-
-# Logs
+# Logs and temp files
 *.log
+*.tmp
+*.swp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Temporary files
-*.tmp
-*.temp
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Maven specific
-.mvn/
-mvnw
-mvnw.cmd
+# Test and coverage
+coverage/
+htmlcov/
+.coverage
+*.pyc
+__pycache__/
 ```

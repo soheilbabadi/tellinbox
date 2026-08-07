@@ -85,6 +85,27 @@ services:
       retries: 5
     restart: unless-stopped
 
+  minio:
+    image: minio/minio:latest
+    container_name: tellinbox-minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - tellinbox_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
   tellinbox-api:
     build: .
     container_name: tellinbox-api
@@ -121,6 +142,7 @@ volumes:
   redis_data:
   mongo_data:
   elasticsearch_data:
+  minio_data:
 
 networks:
   tellinbox_network:

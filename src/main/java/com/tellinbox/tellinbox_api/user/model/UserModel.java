@@ -129,10 +129,10 @@ public class UserModel {
     private String bio;
 
     /**
-     * URL to user's avatar image (stored in cloud storage)
+     * URL to user's profile picture (stored in MinIO cloud storage)
      */
-    @Column(name = "avatar_url", length = 500)
-    private String avatarUrl;
+    @Column(name = "profile_picture_url", length = 500)
+    private String profilePictureUrl;
 
     /**
      * User's gender - optional
@@ -344,7 +344,7 @@ public class UserModel {
     public boolean isProfileComplete() {
         return this.fullName != null && 
                this.username != null && 
-               this.avatarUrl != null && 
+               this.profilePictureUrl != null && 
                this.bio != null;
     }
 
