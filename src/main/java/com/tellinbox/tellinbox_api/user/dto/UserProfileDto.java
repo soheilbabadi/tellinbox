@@ -1,16 +1,28 @@
 package com.tellinbox.tellinbox_api.user.dto;
 
+import com.tellinbox.tellinbox_api.user.enums.Gender;
 import com.tellinbox.tellinbox_api.user.model.UserProfileModel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserProfileDto {
     private UUID userId;
+    private String fullName;
+    private String username;
+    private Gender gender;
+    private LocalDateTime birthDate;
+    private String bio;
+    private String avatarUrl;
+    private String phone;
     private String publicLink;
     private Boolean receiveAnonymousFeedback;
     private Boolean receiveNamedFeedback;
@@ -76,4 +88,6 @@ public class UserProfileDto {
         profile.setWebsiteUrl(this.websiteUrl);
         return profile;
     }
+
+
 }
