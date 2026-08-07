@@ -156,10 +156,9 @@ public class JwtTokenProvider {
      */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .setSigningKey(getSigningKey())
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     /**
