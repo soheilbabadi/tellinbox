@@ -513,8 +513,8 @@ public class FeedbackServiceImpl implements FeedbackService {
             .updatedAt(feedback.getUpdatedAt())
             .publishedAt(feedback.getPublishedAt())
             .archivedAt(feedback.getArchivedAt())
-            .responseText(feedback.getResponse() != null ? feedback.getResponse().getResponse() : null)
-            .isResponsePublic(feedback.getResponse() != null ? feedback.getResponse().getIsPublic() : null)
+            .response(feedback.getResponse() != null ? feedback.getResponse().getResponse() : null)
+            .isPublic(feedback.getResponse() != null ? feedback.getResponse().getIsPublic() : null)
             .build();
     }
 }
