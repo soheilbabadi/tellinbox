@@ -27,7 +27,8 @@ public class UserRegistrationRequest {
     @Size(max = 500, message = "بیو نباید بیشتر از ۵۰۰ کاراکتر باشد")
     private String bio;
 
-    private String avatarUrl;
+    @Size(max = 500, message = "URL عکس پروفایل نباید بیشتر از ۵۰۰ کاراکتر باشد")
+    private String profilePictureUrl;
 
     @Pattern(regexp = "^[a-zA-Z]*$", message = "زبان باید به انگلیسی باشد")
     private String preferredLanguage = "fa";

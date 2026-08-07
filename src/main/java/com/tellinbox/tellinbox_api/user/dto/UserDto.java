@@ -55,10 +55,10 @@ public class UserDto {
     @Size(max = 4000, message = "Bio must be less than 4000 characters")
     private String bio;
 
-    @Size(max = 500, message = "Avatar URL must be less than 500 characters")
+    @Size(max = 500, message = "Profile picture URL must be less than 500 characters")
     @Pattern(regexp = "^(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})([/\\w .-]*)*/?$", 
              message = "Invalid URL format")
-    private String avatarUrl;
+    private String profilePictureUrl;
 
     private Gender gender;
 
@@ -145,7 +145,7 @@ public class UserDto {
             .fullName(user.getFullName())
             .username(user.getUsername())
             .bio(user.getBio())
-            .avatarUrl(user.getAvatarUrl())
+            .profilePictureUrl(user.getProfilePictureUrl())
             .gender(user.getGender())
             .birthDate(user.getBirthDate())
             .status(user.getStatus())
@@ -177,7 +177,7 @@ public class UserDto {
             .fullName(this.fullName)
             .username(this.username)
             .bio(this.bio)
-            .avatarUrl(this.avatarUrl)
+            .profilePictureUrl(this.profilePictureUrl)
             .gender(this.gender)
             .birthDate(this.birthDate)
             .status(this.status != null ? this.status : UserStatus.ACTIVE)
@@ -229,8 +229,8 @@ public class UserDto {
         if (this.bio != null) {
             existingUser.setBio(this.bio);
         }
-        if (this.avatarUrl != null) {
-            existingUser.setAvatarUrl(this.avatarUrl);
+        if (this.profilePictureUrl != null) {
+            existingUser.setProfilePictureUrl(this.profilePictureUrl);
         }
         if (this.gender != null) {
             existingUser.setGender(this.gender);

@@ -21,7 +21,7 @@ public class UserProfileDto {
     private Gender gender;
     private LocalDateTime birthDate;
     private String bio;
-    private String avatarUrl;
+    private String profilePictureUrl;
     private String phone;
     private String publicLink;
     private Boolean receiveAnonymousFeedback;

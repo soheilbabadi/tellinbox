@@ -53,6 +53,12 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("کاربری با این ایمیل وجود دارد");
         }
 
+        // Set default profile picture if not provided
+        String profilePictureUrl = request.getProfilePictureUrl();
+        if (profilePictureUrl == null || profilePictureUrl.isBlank()) {
+            profilePictureUrl = "https://picsum.photos/200";
+        }
+
         // Build user entity
         UserModel user = UserModel.builder()
             .mobile(request.getMobile())
@@ -60,7 +66,7 @@ public class UserServiceImpl implements UserService {
             .fullName(request.getFullName())
             .username(request.getUsername())
             .bio(request.getBio())
-            .avatarUrl(request.getAvatarUrl())
+            .profilePictureUrl(profilePictureUrl)
             .preferredLanguage(request.getPreferredLanguage())
             .status(UserStatus.ACTIVE)
             .isVerified(false)
@@ -148,8 +154,8 @@ public class UserServiceImpl implements UserService {
         if (dto.getBio() != null) {
             user.setBio(dto.getBio());
         }
-        if (dto.getAvatarUrl() != null) {
-            user.setAvatarUrl(dto.getAvatarUrl());
+        if (dto.getProfilePictureUrl() != null) {
+            user.setProfilePictureUrl(dto.getProfilePictureUrl());
         }
         if (dto.getGender() != null) {
             user.setGender(dto.getGender());
