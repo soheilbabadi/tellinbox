@@ -1,0 +1,32 @@
+tellinbox-module-feedback/
+└── src/main/java/com/tellinbox/module/feedback/
+    ├── model/
+    │   ├── Feedback.java
+    │   ├── FeedbackCategory.java
+    │   ├── FeedbackScore.java
+    │   ├── FeedbackRequest.java
+    │   ├── FeedbackResponse.java
+    │   ├── FeedbackAnswer.java
+    │   ├── FeedbackQuestion.java
+    │   ├── FeedbackReport.java
+    │   └── enums/
+    │       ├── FeedbackStatus.java
+    │       ├── FeedbackVisibility.java
+    │       ├── FeedbackPurpose.java
+    │       └── QuestionType.java
+    ├── repository/
+    │   ├── FeedbackRepository.java
+    │   ├── FeedbackCategoryRepository.java
+    │   ├── FeedbackScoreRepository.java
+    │   ├── FeedbackRequestRepository.java
+    │   └── FeedbackReportRepository.java
+    ├── service/
+    │   ├── FeedbackService.java (interface)
+    │   └── impl/
+    │       └── FeedbackServiceImpl.java
+    └── dto/
+        ├── FeedbackDto.java
+        ├── CreateFeedbackRequest.java
+        ├── FeedbackFilter.java
+        ├── FeedbackCategoryDto.java
+        └── FeedbackStatisticsDto.java
