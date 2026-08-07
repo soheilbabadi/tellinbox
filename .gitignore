@@ -1,1 +1,38 @@
-Nothing should be ignored since only a Java source file was modified and no build artifacts, dependencies, or temporary files were detected in the changes.
+```
+# Java/Maven build artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Dependencies
+lib/
+libs/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Maven specific
+.mvn/
+mvnw
+mvnw.cmd
+```

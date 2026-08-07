@@ -13,78 +13,160 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Entity representing a response to a feedback.
+ * DTO representing a response to a feedback.
  * The receiver can respond to feedbacks they've received.
  * 
  * @author Tellinbox Team
  * @version 1.0
  */
-@Entity
-@Table(
-    name = "feedback_responses",
-    indexes = {
-        @Index(name = "idx_feedback_responses_feedback_id", columnList = "feedback_id"),
-        @Index(name = "idx_feedback_responses_created_at", columnList = "created_at")
-    }
-)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"feedback"})
-@EqualsAndHashCode(callSuper = false)
 public class FeedbackResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
     private UUID createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
     private UUID updatedBy;
+    private LocalDateTime deletedAt;
+    private Boolean isDeleted = false;
 
-    @Column(name = "deleted_at")
-    protected LocalDateTime deletedAt;
+    /**
+     * ID of the receiver
+     */
+    private UUID receiverId;
 
-    @Column(name = "is_deleted", nullable = false)
-    protected Boolean isDeleted = false;
+    /**
+     * Name of the receiver
+     */
+    private String receiverName;
+
+    /**
+     * ID of the author
+     */
+    private UUID authorId;
+
+    /**
+     * Name of the author
+     */
+    private String authorName;
+
+    /**
+     * Whether the feedback is anonymous
+     */
+    private Boolean isAnonymous;
+
+    /**
+     * Title of the feedback
+     */
+    private String title;
+
+    /**
+     * Content of the feedback
+     */
+    private String content;
+
+    /**
+     * Status of the feedback
+     */
+    private String status;
+
+    /**
+     * Visibility of the feedback
+     */
+    private String visibility;
+
+    /**
+     * Purpose of the feedback
+     */
+    private String purpose;
+
+    /**
+     * Relationship type
+     */
+    private String relationshipType;
+
+    /**
+     * Overall rating
+     */
+    private Double overallRating;
+
+    /**
+     * Whether the feedback is read
+     */
+    private Boolean isRead;
+
+    /**
+     * When the feedback was read
+     */
+    private LocalDateTime readAt;
+
+    /**
+     * When the feedback was submitted
+     */
+    private LocalDateTime submittedAt;
+
+    /**
+     * Category of the feedback
+     */
+    private String category;
+
+    /**
+     * Tags associated with the feedback
+     */
+    private java.util.List<String> tags;
+
+    /**
+     * Metadata for the feedback
+     */
+    private java.util.Map<String, Object> metadata;
+
+    /**
+     * Whether the feedback has a response
+     */
+    private Boolean hasResponse;
+
+    /**
+     * Whether the feedback is flagged
+     */
+    private Boolean isFlagged;
+
+    /**
+     * Report count
+     */
+    private Integer reportCount;
+
+    /**
+     * Feedback request ID
+     */
+    private UUID feedbackRequestId;
+
+    /**
+     * When the feedback was published
+     */
+    private LocalDateTime publishedAt;
+
+    /**
+     * When the feedback was archived
+     */
+    private LocalDateTime archivedAt;
 
     /**
      * The feedback this response belongs to
      */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "feedback_id", 
-        nullable = false,
-        unique = true,
-        foreignKey = @ForeignKey(name = "fk_feedback_responses_feedback")
-    )
     private FeedbackModel feedback;
 
     /**
      * Content of the response
      */
-    @Column(name = "response", nullable = false, length=4000)
     private String response;
 
     /**
      * Whether the response is public
      */
-    @Column(name = "is_public", nullable = false)
     @Builder.Default
     private Boolean isPublic = false;
 
