@@ -1,5 +1,5 @@
 ```
-# Java/Maven specific
+# Java/Maven build artifacts
 target/
 *.class
 *.jar
@@ -8,26 +8,31 @@ target/
 
 # Dependencies
 lib/
+libs/
 
-# IDE
+# IDE files
+.vscode/
 .idea/
 *.iml
 *.ipr
 *.iws
+
+# Logs
+*.log
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Logs
-*.log
-
-# OS
+# Temporary files
+*.tmp
+*.temp
 .DS_Store
 Thumbs.db
 
-# Temp files
-*.tmp
-*.temp
+# Maven specific
+.mvn/
+mvnw
+mvnw.cmd
 ```

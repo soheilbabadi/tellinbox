@@ -498,9 +498,9 @@ public class FeedbackServiceImpl implements FeedbackService {
             .isAnonymous(feedback.isAnonymous())
             .title(feedback.getTitle())
             .content(feedback.getContent())
-            .status(feedback.getStatus())
-            .visibility(feedback.getVisibility())
-            .purpose(feedback.getPurpose())
+            .status(feedback.getStatus() != null ? feedback.getStatus().name() : null)
+            .visibility(feedback.getVisibility() != null ? feedback.getVisibility().name() : null)
+            .purpose(feedback.getPurpose() != null ? feedback.getPurpose().name() : null)
             .relationshipType(feedback.getRelationshipType())
             .overallRating(feedback.getOverallRating())
             .isRead(feedback.getIsRead())
@@ -513,8 +513,8 @@ public class FeedbackServiceImpl implements FeedbackService {
             .updatedAt(feedback.getUpdatedAt())
             .publishedAt(feedback.getPublishedAt())
             .archivedAt(feedback.getArchivedAt())
-            .responseText(feedback.getResponse() != null ? feedback.getResponse().getResponse() : null)
-            .isResponsePublic(feedback.getResponse() != null ? feedback.getResponse().getIsPublic() : null)
+            .response(feedback.getResponse() != null ? feedback.getResponse().getResponse() : null)
+            .isPublic(feedback.getResponse() != null ? feedback.getResponse().getIsPublic() : null)
             .build();
     }
 }
