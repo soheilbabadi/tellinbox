@@ -55,6 +55,9 @@ public class FeedbackScoreModel {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "receiver-id", nullable = false)
+    private UUID receiverId;
+
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private UUID createdBy;
@@ -114,8 +117,8 @@ public class FeedbackScoreModel {
      * Validate score is within range
      */
     public boolean isValidScore() {
-        Integer min = this.category != null ? this.category.getMinScore() : 1;
-        Integer max = this.category != null ? this.category.getMaxScore() : 5;
+        int min = this.category != null ? this.category.getMinScore() : 1;
+        int max = this.category != null ? this.category.getMaxScore() : 5;
         return this.score != null && this.score >= min && this.score <= max;
     }
 

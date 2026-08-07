@@ -19,7 +19,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedbackResponse {
+public class FeedbackViewDto {
 
     private UUID id;
     private UUID receiverId;
