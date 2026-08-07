@@ -55,6 +55,9 @@ public class FeedbackScoreModel {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "receiver-id", nullable = false)
+    private UUID receiverId;
+
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private UUID createdBy;
