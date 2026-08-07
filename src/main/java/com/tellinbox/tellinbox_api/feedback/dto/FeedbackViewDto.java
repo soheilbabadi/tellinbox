@@ -5,11 +5,12 @@ import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Data Transfer Object for Feedback creation/update requests.
- * This is a general-purpose request DTO that can be used for both create and update operations.
+ * Data Transfer Object for Feedback response.
+ * Used for API response handling.
  * 
  * @author Tellinbox Team
  * @version 1.0
@@ -18,10 +19,13 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedbackRequest {
+public class FeedbackResponse {
 
+    private UUID id;
     private UUID receiverId;
+    private String receiverName;
     private UUID authorId;
+    private String authorName;
     private Boolean isAnonymous;
     private String title;
     private String content;
@@ -30,5 +34,16 @@ public class FeedbackRequest {
     private FeedbackPurpose purpose;
     private String relationshipType;
     private Double overallRating;
+    private Boolean isRead;
+    private LocalDateTime readAt;
+    private Boolean hasResponse;
+    private Boolean isFlagged;
+    private Integer reportCount;
     private UUID feedbackRequestId;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime publishedAt;
+    private LocalDateTime archivedAt;
+    private String responseText;
+    private Boolean isResponsePublic;
 }
