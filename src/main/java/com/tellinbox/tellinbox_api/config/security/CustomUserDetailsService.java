@@ -45,7 +45,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                     throw new UsernameNotFoundException("User account is deactivated or deleted");
                 }
                 
-                return new org.springframework.security.core.userdetails.User(
+                return CustomUserDetails.create(
+                    user.getId(),
                     user.getMobile(), // Use mobile as username for security
                     user.getPasswordHash() != null ? user.getPasswordHash() : "",
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
@@ -65,7 +66,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUuid(UUID userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
             .filter(user -> !user.getIsDeleted() && user.isActive())
-            .map(user -> new org.springframework.security.core.userdetails.User(
+            .map(user -> CustomUserDetails.create(
+                user.getId(),
                 user.getMobile(),
                 user.getPasswordHash() != null ? user.getPasswordHash() : "",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
