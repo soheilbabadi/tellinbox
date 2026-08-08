@@ -51,6 +51,12 @@ public class JwtTokenProvider {
      */
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        
+        // Include userId in claims if available
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            claims.put("userId", customUserDetails.getUserId().toString());
+        }
+        
         return createToken(claims, userDetails.getUsername(), jwtExpirationMs);
     }
 
@@ -62,6 +68,12 @@ public class JwtTokenProvider {
      */
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        
+        // Include userId in claims if available
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            claims.put("userId", customUserDetails.getUserId().toString());
+        }
+        
         return createToken(claims, userDetails.getUsername(), jwtRefreshExpirationMs);
     }
 
