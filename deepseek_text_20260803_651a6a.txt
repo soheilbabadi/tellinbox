@@ -1,0 +1,61 @@
+tellinbox-models/
+├── user/
+│   ├── User.java
+│   ├── UserProfile.java
+│   ├── enums/
+│   │   ├── UserStatus.java
+│   │   ├── Gender.java
+│   │   └── RelationshipType.java
+│   ├── repository/
+│   │   └── UserRepository.java
+│   ├── dto/
+│   │   ├── UserDto.java
+│   │   ├── UserProfileDto.java
+│   │   ├── UserRegistrationRequest.java
+│   │   └── UserUpdateRequest.java
+│   └── service/
+│       ├── UserService.java
+│       └── impl/
+│           └── UserServiceImpl.java
+│
+├── feedback/
+│   ├── Feedback.java
+│   ├── FeedbackCategory.java
+│   ├── FeedbackScore.java
+│   ├── FeedbackRequest.java
+│   ├── FeedbackResponse.java
+│   ├── FeedbackReport.java
+│   ├── FeedbackAnswer.java
+│   ├── FeedbackQuestion.java
+│   ├── enums/
+│   │   ├── FeedbackStatus.java
+│   │   ├── FeedbackVisibility.java
+│   │   └── FeedbackPurpose.java
+│   ├── repository/
+│   │   ├── FeedbackRepository.java
+│   │   ├── FeedbackCategoryRepository.java
+│   │   ├── FeedbackScoreRepository.java
+│   │   └── FeedbackRequestRepository.java
+│   ├── dto/
+│   │   ├── FeedbackDto.java
+│   │   ├── CreateFeedbackRequest.java
+│   │   ├── FeedbackFilter.java
+│   │   └── FeedbackStatisticsDto.java
+│   └── service/
+│       ├── FeedbackService.java
+│       └── impl/
+│           └── FeedbackServiceImpl.java
+│
+├── common/
+│   ├── base/
+│   │   ├── BaseEntity.java
+│   │   └── BaseDto.java
+│   ├── exception/
+│   │   ├── BusinessException.java
+│   │   ├── NotFoundException.java
+│   │   └── ValidationException.java
+│   └── utils/
+│       ├── ValidationUtils.java
+│       └── DateUtils.java
+│
+└── README.md

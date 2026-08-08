@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: tellinbox-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tellinbox_db
+    username: admin
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      password: admin
+      jedis:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  liquibase:
+    enabled: ${SPRING_LIQUIBASE_ENABLED:true}
+    change-log: ${SPRING_LIQUIBASE_CHANGE_LOG:classpath:/db/changelog/init-changelog.xml}
+    contexts: ${SPRING_LIQUIBASE_CONTEXTS:}
+    default-schema: ${LIQUIBASE_SCHEMA:public}
+    liquibase-schema: ${LIQUIBASE_SCHEMA:public}
+    database-change-log-table: ${LIQUIBASE_CHANGELOG_TABLE:DATABASECHANGELOG}
+    database-change-log-lock-table: ${LIQUIBASE_CHANGELOG_LOCK_TABLE:DATABASECHANGELOGLOCK}
+    drop-first: ${SPRING_LIQUIBASE_DROP_FIRST:false}
+    clear-checksums: ${SPRING_LIQUIBASE_CLEAR_CHECKSUMS:false}
+    password: admin
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: 86400000 # 24 hours
+  otp:
+    expiry: 5 # minutes
+    length: 6
+  storage:
+    avatar:
+      path: /uploads/avatars
+      max-size: 5242880 # 5MB
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:admin}
+    secret-key: ${MINIO_SECRET_KEY:adminadmin}
+    bucket-name: ${MINIO_BUCKET_NAME:profile-pictures}
+
+logging:
+  level:
+    com.tellinbox: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

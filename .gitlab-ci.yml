@@ -1,0 +1,49 @@
+image: maven:3.9.6-amazoncorretto-21
+
+variables:
+  PROJECT_NAME: $CI_PROJECT_NAME
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository/
+
+stages:
+  - build
+  - package
+  - dockerize
+
+maven-build:
+  stage: build
+  script:
+    - mvn clean compile
+
+maven-package:
+  stage: package
+  script:
+    - mvn clean package -DskipTests -Dmaven.javadoc.skip=true
+
+dockerize:
+  stage: dockerize
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t sbabadi/"$CI_PROJECT_NAME":main .
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"  docker.io
+    - docker push sbabadi/"$CI_PROJECT_NAME":main
+  only:
+    - main
