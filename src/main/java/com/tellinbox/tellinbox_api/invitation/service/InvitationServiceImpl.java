@@ -15,12 +15,13 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class InvitationService {
+public class InvitationServiceImpl {
 
     private final InvitationRepository invitationRepository;
     private final UserRepository userRepository;
@@ -28,7 +29,7 @@ public class InvitationService {
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
-    public InvitationDto createInvitation(Long userId, Integer maxUses, Integer expiresInSeconds) {
+    public InvitationDto createInvitation(UUID userId, Integer maxUses, Integer expiresInSeconds) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("User not found"));
 
@@ -79,7 +80,7 @@ public class InvitationService {
     }
 
     @Transactional(readOnly = true)
-    public List<InvitationDto> getUserInvitations(Long userId) {
+    public List<InvitationDto> getUserInvitations(UUID userId) {
         return invitationRepository.findAll().stream()
                 .filter(inv -> inv.getUser().getId().equals(userId))
                 .map(this::toDto)

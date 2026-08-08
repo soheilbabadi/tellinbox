@@ -1,7 +1,7 @@
 package com.tellinbox.tellinbox_api.user.controller;
 
-import com.tellinbox.tellinbox_api.dto.ProfilePictureDto;
-import com.tellinbox.tellinbox_api.service.ProfilePictureService;
+import com.tellinbox.tellinbox_api.config.security.CustomUserDetails;
+import com.tellinbox.tellinbox_api.user.service.ProfilePictureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/profile")
@@ -29,6 +30,12 @@ public class ProfileController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails) {
         
+        // Get userId from CustomUserDetails (UUID type)
+        UUID userId = null;
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            userId = customUserDetails.getUserId();
+        }
+        
         String username = userDetails.getUsername();
         ProfilePictureDto result = profilePictureService.uploadProfilePicture(username, file);
         
@@ -42,6 +49,12 @@ public class ProfileController {
     public ResponseEntity<Map<String, String>> deleteProfilePicture(
             @AuthenticationPrincipal UserDetails userDetails) {
         
+        // Get userId from CustomUserDetails (UUID type)
+        UUID userId = null;
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            userId = customUserDetails.getUserId();
+        }
+        
         String username = userDetails.getUsername();
         profilePictureService.deleteProfilePicture(username);
         
@@ -54,6 +67,12 @@ public class ProfileController {
     @GetMapping("/picture")
     public ResponseEntity<ProfilePictureDto> getProfilePicture(
             @AuthenticationPrincipal UserDetails userDetails) {
+        
+        // Get userId from CustomUserDetails (UUID type)
+        UUID userId = null;
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            userId = customUserDetails.getUserId();
+        }
         
         String username = userDetails.getUsername();
         ProfilePictureDto result = profilePictureService.getProfilePictureUrl(username);

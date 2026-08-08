@@ -2,7 +2,7 @@ package com.tellinbox.tellinbox_api.invitation.controller;
 
 import com.tellinbox.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.invitation.dto.InvitationDto;
-import com.tellinbox.tellinbox_api.invitation.service.InvitationService;
+import com.tellinbox.tellinbox_api.invitation.service.InvitationServiceImpl;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/invitations")
 @RequiredArgsConstructor
 public class InvitationController {
 
-    private final InvitationService invitationService;
+    private final InvitationServiceImpl invitationServiceImpl;
     private final UserRepository userRepository;
 
     /**
@@ -37,7 +38,7 @@ public class InvitationController {
         
         Long userId = getUserIdFromUsername(userDetails.getUsername());
         
-        InvitationDto invitation = invitationService.createInvitation(userId, maxUses, expiresInSeconds);
+        InvitationDto invitation = invitationServiceImpl.createInvitation(userId, maxUses, expiresInSeconds);
         return new ResponseEntity<>(invitation, HttpStatus.CREATED);
     }
 
@@ -54,7 +55,7 @@ public class InvitationController {
             @RequestParam(required = false) Integer maxUses,
             @RequestParam(required = false) Integer expiresInSeconds) {
         
-        InvitationDto invitation = invitationService.updateInvitation(token, maxUses, expiresInSeconds);
+        InvitationDto invitation = invitationServiceImpl.updateInvitation(token, maxUses, expiresInSeconds);
         return new ResponseEntity<>(invitation, HttpStatus.OK);
     }
 
@@ -65,8 +66,8 @@ public class InvitationController {
     public ResponseEntity<List<InvitationDto>> getUserInvitations(
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserIdFromUsername(userDetails.getUsername());
-        List<InvitationDto> invitations = invitationService.getUserInvitations(userId);
+        UUID userId = getUserIdFromUsername(userDetails.getUsername());
+        List<InvitationDto> invitations = invitationServiceImpl.getUserInvitations(userId);
         return new ResponseEntity<>(invitations, HttpStatus.OK);
     }
 
@@ -75,7 +76,7 @@ public class InvitationController {
      */
     @GetMapping("/{token}")
     public ResponseEntity<InvitationDto> getInvitation(@PathVariable String token) {
-        InvitationDto invitation = invitationService.getInvitationByToken(token);
+        InvitationDto invitation = invitationServiceImpl.getInvitationByToken(token);
         return new ResponseEntity<>(invitation, HttpStatus.OK);
     }
 
@@ -84,7 +85,7 @@ public class InvitationController {
      */
     @PostMapping("/{token}/deactivate")
     public ResponseEntity<Map<String, String>> deactivateInvitation(@PathVariable String token) {
-        invitationService.deactivateInvitation(token);
+        invitationServiceImpl.deactivateInvitation(token);
         return new ResponseEntity<>(Map.of("message", "Invitation deactivated successfully"), HttpStatus.OK);
     }
 
@@ -93,14 +94,14 @@ public class InvitationController {
      */
     @PostMapping("/{token}/activate")
     public ResponseEntity<Map<String, String>> activateInvitation(@PathVariable String token) {
-        invitationService.activateInvitation(token);
+        invitationServiceImpl.activateInvitation(token);
         return new ResponseEntity<>(Map.of("message", "Invitation activated successfully"), HttpStatus.OK);
     }
 
     /**
      * Helper method to extract user ID from username.
      */
-    private Long getUserIdFromUsername(String username) {
+    private UUID getUserIdFromUsername(String username) {
         return userRepository.findByMobile(username)
                 .or(() -> userRepository.findByEmail(username))
                 .or(() -> userRepository.findByUsername(username))
