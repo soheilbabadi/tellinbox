@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.invitation.controller;
 
+import com.tellinbox.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.invitation.dto.InvitationDto;
 import com.tellinbox.tellinbox_api.invitation.service.InvitationService;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
@@ -104,6 +105,6 @@ public class InvitationController {
                 .or(() -> userRepository.findByEmail(username))
                 .or(() -> userRepository.findByUsername(username))
                 .map(UserModel::getId)
-                .orElseThrow(() -> new RuntimeException("User not found with identifier: " + username));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("User not found with identifier: " + username));
     }
 }

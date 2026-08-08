@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.user.service;
 
+import com.tellinbox.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import io.minio.*;
@@ -43,7 +44,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
             // Ensure bucket exists
             ensureBucketExists();
@@ -80,7 +81,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to upload profile picture for user ID: {}", userId, e);
-            throw new RuntimeException("خطا در بارگذاری تصویر پروفایل: " + e.getMessage(), e);
+            throw new TellInboxCustomException.ApplicationServerException("خطا در بارگذاری تصویر پروفایل: " + e.getMessage());
         }
     }
 
@@ -92,7 +93,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
         try {
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
             String currentProfilePictureUrl = user.getProfilePictureUrl();
             
@@ -123,7 +124,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to delete profile picture for user ID: {}", userId, e);
-            throw new RuntimeException("خطا در حذف تصویر پروفایل: " + e.getMessage(), e);
+            throw new TellInboxCustomException.ApplicationServerException("خطا در حذف تصویر پروفایل: " + e.getMessage());
         }
     }
 
@@ -134,7 +135,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         try {
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
             String profilePictureUrl = user.getProfilePictureUrl();
             
@@ -148,7 +149,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to get profile picture URL for user ID: {}", userId, e);
-            throw new RuntimeException("خطا در دریافت لینک تصویر پروفایل: " + e.getMessage(), e);
+            throw new TellInboxCustomException.ApplicationServerException("خطا در دریافت لینک تصویر پروفایل: " + e.getMessage());
         }
     }
 
@@ -157,19 +158,19 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("فایل تصویر خالی است");
+            throw new TellInboxCustomException.ValidationException("فایل تصویر خالی است");
         }
 
         // Check file size (max 5MB)
         long maxSize = 5 * 1024 * 1024; // 5MB
         if (file.getSize() > maxSize) {
-            throw new IllegalArgumentException("حجم فایل نباید بیشتر از 5 مگابایت باشد");
+            throw new TellInboxCustomException.ValidationException("حجم فایل نباید بیشتر از 5 مگابایت باشد");
         }
 
         // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !isValidImageType(contentType)) {
-            throw new IllegalArgumentException("فایل باید از نوع تصویر باشد (JPEG, PNG, GIF, WebP)");
+            throw new TellInboxCustomException.ValidationException("فایل باید از نوع تصویر باشد (JPEG, PNG, GIF, WebP)");
         }
     }
 

@@ -1,0 +1,67 @@
+<configuration>
+    <springProperty scope="context" name="AppName" source="spring.application.name" defaultValue="tellinbox"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <!-- Color pattern for console -->
+    <property name="CONSOLE_LOG_PATTERN" 
+              value="%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+    <!-- Local and Test Profiles: Console with Colors + SQL Debugging -->
+    <springProfile name="local,test">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            </encoder>
+        </appender>
+
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace"/>
+        <logger name="org.hibernate.SQL" level="debug"/>
+        <logger name="org.hibernate.type" level="TRACE"/>
+        
+        <logger name="com.tellinbox" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Production, Dev, STG, UAT Profiles: File Rolling + Console -->
+    <springProfile name="dev,Production,stg,uat">
+        <property name="LOG_FILE" value="/var/log/tellinbox/${AppName}.log"/>
+        
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <encoder>
+                <!-- If logstash encoder is present, this will be overridden by JsonEncoder -->
+                <pattern>${FILE_LOG_PATTERN}</pattern>
+            </encoder>
+            <file>${LOG_FILE}</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <maxHistory>30</maxHistory>
+                <maxFileSize>10MB</maxFileSize>
+                <totalSizeCap>3GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- JSON Encoder for File (Active if logstash-logback-encoder dependency exists) -->
+        <!-- To enable JSON, add: net.logstash.logback:logstash-logback-encoder to pom.xml -->
+        
+        <logger name="com.tellinbox" level="INFO" additivity="false">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+        
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            </encoder>
+        </appender>
+    </springProfile>
+</configuration>

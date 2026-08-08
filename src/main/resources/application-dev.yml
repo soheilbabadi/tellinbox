@@ -1,0 +1,42 @@
+# Development Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  # Database - H2 for easy local development
+  datasource:
+    url: jdbc:h2:mem:tellinbox_dev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # Logging - Enable SQL debugging
+logging:
+  level:
+    root: INFO
+    com.tellinbox: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  
+# MinIO - Local development endpoint
+minio:
+  url: http://localhost:9000
+  bucket: tellinbox-dev
+  
+# JWT - Relaxed settings for development
+jwt:
+  secret: ${JWT_SECRET:dev-secret-key-for-local-development-only-do-not-use-in-production-12345678}
+  expiration-ms: 86400000 # 24 hours
+  refresh-expiration-ms: 604800000 # 7 days
