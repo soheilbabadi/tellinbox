@@ -3,9 +3,10 @@ package com.tellinbox.tellinbox_api.feedback.service;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackRequest;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackResponse;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
-import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
+import com.tellinbox.tellinbox_api.feedback.mapper.FeedbackMapper;
 import com.tellinbox.tellinbox_api.feedback.model.*;
 import com.tellinbox.tellinbox_api.feedback.repository.FeedbackRepository;
+import com.tellinbox.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
     private final UserRepository userRepository;
+    private final FeedbackMapper feedbackMapper;
 
     // ==================== Core CRUD Operations ====================
 
@@ -45,7 +47,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         // Validate receiver exists
         UserModel receiver = userRepository.findById(request.getReceiverId())
-            .orElseThrow(() -> new IllegalArgumentException("کاربر دریافت‌کننده یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر دریافت‌کننده یافت نشد"));
 
         // Validate author if not anonymous
         UserModel author = null;
@@ -53,27 +55,11 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         if (!isAnonymous && request.getAuthorId() != null) {
             author = userRepository.findById(request.getAuthorId())
-                .orElseThrow(() -> new IllegalArgumentException("کاربر ارسال‌کننده یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر ارسال‌کننده یافت نشد"));
         }
 
-        // Build feedback entity
-        FeedbackModel feedback = FeedbackModel.builder()
-            .receiver(receiver)
-            .author(author)
-            .isAnonymous(isAnonymous)
-            .title(request.getTitle())
-            .content(request.getContent())
-            .status(FeedbackStatus.PENDING)
-            .visibility(request.getVisibility() != null ? request.getVisibility() : FeedbackVisibility.PRIVATE)
-            .purpose(request.getPurpose())
-            .relationshipType(request.getRelationshipType())
-            .overallRating(0.0)
-            .isRead(false)
-            .hasResponse(false)
-            .isFlagged(false)
-            .reportCount(0)
-            .feedbackRequestId(request.getFeedbackRequestId())
-            .build();
+        // Build feedback entity using mapper
+        FeedbackModel feedback = feedbackMapper.toEntity(request, author, receiver);
 
         // Save feedback
         FeedbackModel savedFeedback = feedbackRepository.save(feedback);
@@ -84,21 +70,21 @@ public class FeedbackServiceImpl implements FeedbackService {
         receiver.updateAverageScore(request.getOverallRating() != null ? request.getOverallRating() : 0.0);
         userRepository.save(receiver);
 
-        return convertToDto(savedFeedback);
+        return feedbackMapper.toDto(savedFeedback);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<FeedbackResponse> findById(UUID id) {
         log.debug("Finding feedback by ID: {}", id);
-        return feedbackRepository.findById(id).map(this::convertToDto);
+        return feedbackRepository.findById(id).map(feedbackMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<FeedbackResponse> findAll(Pageable pageable) {
         log.debug("Finding all feedbacks with pagination: {}", pageable);
-        return feedbackRepository.findAll(pageable).map(this::convertToDto);
+        return feedbackRepository.findAll(pageable).map(feedbackMapper::toDto);
     }
 
     @Override
@@ -107,7 +93,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Updating feedback with ID: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
 
         // Update fields
         if (request.getTitle() != null) {
@@ -132,7 +118,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         FeedbackModel updatedFeedback = feedbackRepository.save(feedback);
         log.info("Feedback updated successfully: {}", feedbackId);
 
-        return convertToDto(updatedFeedback);
+        return feedbackMapper.toDto(updatedFeedback);
     }
 
     @Override
@@ -142,7 +128,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int deleted = feedbackRepository.softDeleteFeedback(feedbackId);
         if (deleted == 0) {
-            throw new IllegalArgumentException("بازخورد یافت نشد یا قبلاً حذف شده است");
+            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد یا قبلاً حذف شده است");
         }
         
         log.info("Feedback soft deleted successfully: {}", feedbackId);
@@ -154,7 +140,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Transactional(readOnly = true)
     public Page<FeedbackResponse> getFeedbacksByReceiver(UUID receiverId, Pageable pageable) {
         log.debug("Finding feedbacks by receiver: {}", receiverId);
-        return feedbackRepository.findByReceiverId(receiverId, pageable).map(this::convertToDto);
+        return feedbackRepository.findByReceiverId(receiverId, pageable).map(feedbackMapper::toDto);
     }
 
     @Override
@@ -162,7 +148,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Page<FeedbackResponse> getPublishedFeedbacksByReceiver(UUID receiverId, Pageable pageable) {
         log.debug("Finding published feedbacks by receiver: {}", receiverId);
         return feedbackRepository.findPublishedByReceiver(receiverId, FeedbackStatus.PUBLISHED, pageable)
-            .map(this::convertToDto);
+            .map(feedbackMapper::toDto);
     }
 
     @Override
@@ -171,7 +157,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding pending feedbacks by receiver: {}", receiverId);
         return feedbackRepository.findByReceiverIdAndStatus(receiverId, FeedbackStatus.PENDING)
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -181,7 +167,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding unread feedbacks by receiver: {}", receiverId);
         return feedbackRepository.findUnreadFeedbacks(receiverId)
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -192,7 +178,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.markAsRead(feedbackId);
         if (updated == 0) {
-            throw new IllegalArgumentException("بازخورد یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
         }
     }
 
@@ -214,7 +200,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Transactional(readOnly = true)
     public Page<FeedbackResponse> getFeedbacksByAuthor(UUID authorId, Pageable pageable) {
         log.debug("Finding feedbacks by author: {}", authorId);
-        return feedbackRepository.findByAuthorId(authorId, pageable).map(this::convertToDto);
+        return feedbackRepository.findByAuthorId(authorId, pageable).map(feedbackMapper::toDto);
     }
 
     // ==================== Status Management ====================
@@ -226,10 +212,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int published = feedbackRepository.publishFeedback(feedbackId);
         if (published == 0) {
-            throw new IllegalArgumentException("بازخورد یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
         }
         
-        return findById(feedbackId).orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
     }
 
     @Override
@@ -239,10 +225,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int archived = feedbackRepository.archiveFeedback(feedbackId, archivedBy);
         if (archived == 0) {
-            throw new IllegalArgumentException("بازخورد یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
         }
         
-        return findById(feedbackId).orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
     }
 
     @Override
@@ -252,10 +238,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.updateStatus(feedbackId, status);
         if (updated == 0) {
-            throw new IllegalArgumentException("بازخورد یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
         }
         
-        return findById(feedbackId).orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
     }
 
     @Override
@@ -265,10 +251,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.updateVisibility(feedbackId, visibility);
         if (updated == 0) {
-            throw new IllegalArgumentException("بازخورد یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
         }
         
-        return findById(feedbackId).orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
     }
 
     // ==================== Response Management ====================
@@ -279,7 +265,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Adding response to feedback: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
 
         if (!feedback.canRespond()) {
             throw new IllegalStateException("این بازخورد نمی‌تواند پاسخ داده شود");
@@ -296,7 +282,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedbackRepository.save(feedback);
 
         log.info("Response added to feedback: {}", feedbackId);
-        return convertToDto(feedback);
+        return feedbackMapper.toDto(feedback);
     }
 
     @Override
@@ -305,7 +291,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Updating response for feedback: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
 
         if (feedback.getResponse() == null) {
             throw new IllegalStateException("پاسخی برای این بازخورد وجود ندارد");
@@ -315,7 +301,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedbackRepository.save(feedback);
 
         log.info("Response updated for feedback: {}", feedbackId);
-        return convertToDto(feedback);
+        return feedbackMapper.toDto(feedback);
     }
 
     @Override
@@ -323,7 +309,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Page<FeedbackResponse> getFeedbacksWithResponses(UUID receiverId, Pageable pageable) {
         log.debug("Finding feedbacks with responses for receiver: {}", receiverId);
         return feedbackRepository.findFeedbacksWithResponses(receiverId, pageable)
-            .map(this::convertToDto);
+            .map(feedbackMapper::toDto);
     }
 
     // ==================== Reporting & Moderation ====================
@@ -334,10 +320,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Reporting feedback: {} by user: {}", feedbackId, reportedBy);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new IllegalArgumentException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
 
         UserModel reporter = userRepository.findById(reportedBy)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر گزارش‌دهنده یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر گزارش‌دهنده یافت نشد"));
 
         // Create report
         FeedbackReportModel report = FeedbackReportModel.builder()
@@ -359,7 +345,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding flagged feedbacks");
         return feedbackRepository.findByIsFlaggedTrue()
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -369,7 +355,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding feedbacks with minimum {} reports", minReports);
         return feedbackRepository.findByReportCountGreaterThan(minReports)
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -380,7 +366,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Page<FeedbackResponse> searchFeedbacks(UUID receiverId, String query, Pageable pageable) {
         log.debug("Searching feedbacks for receiver: {} with query: {}", receiverId, query);
         return feedbackRepository.searchFeedbacks(receiverId, query, pageable)
-            .map(this::convertToDto);
+            .map(feedbackMapper::toDto);
     }
 
     @Override
@@ -388,7 +374,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Page<FeedbackResponse> getRecentActiveFeedbacks(UUID receiverId, Pageable pageable) {
         log.debug("Finding recent active feedbacks for receiver: {}", receiverId);
         return feedbackRepository.findRecentActiveFeedbacks(receiverId, pageable)
-            .map(this::convertToDto);
+            .map(feedbackMapper::toDto);
     }
 
     @Override
@@ -396,7 +382,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Page<FeedbackResponse> getTopRatedFeedbacks(UUID receiverId, Pageable pageable) {
         log.debug("Finding top rated feedbacks for receiver: {}", receiverId);
         return feedbackRepository.findTopRatedFeedbacks(receiverId, pageable)
-            .map(this::convertToDto);
+            .map(feedbackMapper::toDto);
     }
 
     @Override
@@ -405,7 +391,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding anonymous feedbacks for receiver: {}", receiverId);
         return feedbackRepository.findAnonymousFeedbacks(receiverId)
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -415,7 +401,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding feedbacks by relationship type: {} for receiver: {}", relationshipType, receiverId);
         return feedbackRepository.findFeedbacksByRelationshipType(receiverId, relationshipType)
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -475,7 +461,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.debug("Finding feedbacks in date range: {} to {}", startDate, endDate);
         return feedbackRepository.findFeedbacksInDateRange(startDate, endDate)
             .stream()
-            .map(this::convertToDto)
+            .map(feedbackMapper::toDto)
             .collect(Collectors.toList());
     }
 
@@ -483,38 +469,10 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     /**
      * Convert FeedbackModel to FeedbackResponse DTO
+     * @deprecated Use FeedbackMapper.toDto() instead
      */
+    @Deprecated
     private FeedbackResponse convertToDto(FeedbackModel feedback) {
-        if (feedback == null) {
-            return null;
-        }
-
-        return FeedbackResponse.builder()
-            .id(feedback.getId())
-            .receiverId(feedback.getReceiver().getId())
-            .receiverName(feedback.getReceiver().getDisplayName())
-            .authorId(feedback.getAuthor() != null ? feedback.getAuthor().getId() : null)
-            .authorName(feedback.getAuthorDisplayName())
-            .isAnonymous(feedback.isAnonymous())
-            .title(feedback.getTitle())
-            .content(feedback.getContent())
-            .status(feedback.getStatus() != null ? feedback.getStatus().name() : null)
-            .visibility(feedback.getVisibility() != null ? feedback.getVisibility().name() : null)
-            .purpose(feedback.getPurpose() != null ? feedback.getPurpose().name() : null)
-            .relationshipType(feedback.getRelationshipType())
-            .overallRating(feedback.getOverallRating())
-            .isRead(feedback.getIsRead())
-            .readAt(feedback.getReadAt())
-            .hasResponse(feedback.getHasResponse())
-            .isFlagged(feedback.getIsFlagged())
-            .reportCount(feedback.getReportCount())
-            .feedbackRequestId(feedback.getFeedbackRequestId())
-            .createdAt(feedback.getCreatedAt())
-            .updatedAt(feedback.getUpdatedAt())
-            .publishedAt(feedback.getPublishedAt())
-            .archivedAt(feedback.getArchivedAt())
-            .response(feedback.getResponse() != null ? feedback.getResponse().getResponse() : null)
-            .isPublic(feedback.getResponse() != null ? feedback.getResponse().getIsPublic() : null)
-            .build();
+        return feedbackMapper.toDto(feedback);
     }
 }
