@@ -3,9 +3,11 @@
 *.class
 *.o
 *.obj
+*.exe
+*.dll
+*.so
+*.a
 *.out
-build/
-target/
 
 # Dependencies
 node_modules/
@@ -14,12 +16,14 @@ venv/
 __pycache__/
 .mypy_cache/
 .pytest_cache/
+target/
 .gradle/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
+*.swo
 
 # Environment
 .env
@@ -30,7 +34,7 @@ __pycache__/
 .vscode/
 .idea/
 
-# System files
+# System
 .DS_Store
 Thumbs.db
 
@@ -39,7 +43,7 @@ coverage/
 htmlcov/
 .coverage
 
-# Archives
+# Compressed files
 *.zip
 *.gz
 *.tar

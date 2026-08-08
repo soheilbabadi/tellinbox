@@ -45,12 +45,12 @@ public class UserServiceImpl implements UserService {
 
         // Check if mobile already exists
         if (userRepository.existsByMobile(request.getMobile())) {
-            throw new IllegalArgumentException("کاربری با این شماره موبایل وجود دارد");
+            throw new TellInboxCustomException.DuplicateEntityException("کاربری با این شماره موبایل وجود دارد");
         }
 
         // Check if email already exists (if provided)
         if (request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("کاربری با این ایمیل وجود دارد");
+            throw new TellInboxCustomException.DuplicateEntityException("کاربری با این ایمیل وجود دارد");
         }
 
         // Set default profile picture if not provided
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user profile for ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
         // Update fields
         if (dto.getFullName() != null) {
@@ -180,7 +180,7 @@ public class UserServiceImpl implements UserService {
         
         int deleted = userRepository.softDeleteUser(userId);
         if (deleted == 0) {
-            throw new IllegalArgumentException("کاربر یافت نشد یا قبلاً حذف شده است");
+            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد یا قبلاً حذف شده است");
         }
         
         log.info("User soft deleted successfully: {}", userId);
@@ -196,7 +196,7 @@ public class UserServiceImpl implements UserService {
         
         int deleted = userRepository.hardDeleteUser(userId);
         if (deleted == 0) {
-            throw new IllegalArgumentException("کاربر یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد");
         }
         
         log.info("User hard deleted successfully: {}", userId);
@@ -211,10 +211,10 @@ public class UserServiceImpl implements UserService {
 
         int updated = userRepository.updateUserStatus(userId, status);
         if (updated == 0) {
-            throw new IllegalArgumentException("کاربر یافت نشد");
+            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد");
         }
 
-        return findById(userId).orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+        return findById(userId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
     }
 
     @Override
@@ -223,7 +223,7 @@ public class UserServiceImpl implements UserService {
         log.info("Verifying user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
         user.setIsVerified(true);
         UserModel updatedUser = userRepository.save(user);
@@ -238,7 +238,7 @@ public class UserServiceImpl implements UserService {
         log.info("Verifying email for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
         user.setIsEmailVerified(true);
         UserModel updatedUser = userRepository.save(user);
@@ -265,12 +265,12 @@ public class UserServiceImpl implements UserService {
         log.info("Updating password for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
         // Verify current password if exists
         if (user.getPasswordHash() != null) {
             if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-                throw new IllegalArgumentException("رمز عبور فعلی اشتباه است");
+                throw new TellInboxCustomException.ValidationException("رمز عبور فعلی اشتباه است");
             }
         }
 
@@ -287,7 +287,7 @@ public class UserServiceImpl implements UserService {
         log.info("Resetting password for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -301,7 +301,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Updating last login for user: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
 
         user.updateLastLogin(ip, userAgent);
         userRepository.save(user);
