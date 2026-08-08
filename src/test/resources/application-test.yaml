@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  minio:
+    endpoint: http://localhost:9000
+    access-key: admin
+    secret-key: adminadmin
+    bucket-name: test-profile-pictures
+
+jwt:
+  secret: test-secret-key-for-testing-purposes-only-must-be-long-enough
+  expiration-ms: 3600000
+  refresh-expiration-ms: 86400000
+
+logging:
+  level:
+    root: WARN
+    com.tellinbox.tellinbox_api: DEBUG
+    org.springframework.security: DEBUG
