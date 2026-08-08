@@ -1,0 +1,70 @@
+# Production Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  # Database - PostgreSQL for production
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tellinbox}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  
+  # Flyway for database migrations
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  
+  # Jackson for JSON processing
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+# Logging - Production settings (file-based via logback-spring.xml)
+logging:
+  level:
+    root: INFO
+    com.tellinbox: INFO
+    org.hibernate.SQL: OFF
+    org.springframework.security: WARN
+
+# MinIO - Production endpoint
+minio:
+  url: ${MINIO_URL:https://s3.amazonaws.com}
+  bucket: ${MINIO_BUCKET:tellinbox-prod}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+
+# JWT - Strict security settings for production
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: 3600000 # 1 hour
+  refresh-expiration-ms: 86400000 # 24 hours
+  issuer: tellinbox
+  audience: tellinbox-app
+
+# Server settings
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,application/json,application/javascript
+    min-response-size: 1024
