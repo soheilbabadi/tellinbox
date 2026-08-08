@@ -1,8 +1,7 @@
 package com.tellinbox.tellinbox_api.user.controller;
 
-import com.tellinbox.tellinbox_api.dto.ProfilePictureDto;
-import com.tellinbox.tellinbox_api.service.ProfilePictureService;
 import com.tellinbox.tellinbox_api.config.security.CustomUserDetails;
+import com.tellinbox.tellinbox_api.user.service.ProfilePictureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
