@@ -7,6 +7,7 @@ import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "profilePictures", key = "#userId")
     public String uploadProfilePicture(UUID userId, MultipartFile file) {
         log.info("Uploading profile picture for user ID: {}", userId);
 
@@ -86,6 +88,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "profilePictures", key = "#userId")
     public void deleteProfilePicture(UUID userId) {
         log.info("Deleting profile picture for user ID: {}", userId);
 
