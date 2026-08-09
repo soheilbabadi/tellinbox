@@ -37,7 +37,7 @@ public class ProfileController {
         }
         
         UUID username = UUID.fromString(userDetails.getUsername());
-        ProfilePictureDto result = profilePictureService.uploadProfilePicture(username, file);
+        String result = profilePictureService.uploadProfilePicture(username, file);
         
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -65,7 +65,7 @@ public class ProfileController {
      * Get the current profile picture URL for the authenticated user.
      */
     @GetMapping("/picture")
-    public ResponseEntity<ProfilePictureDto> getProfilePicture(
+    public ResponseEntity<String> getProfilePicture(
             @AuthenticationPrincipal UserDetails userDetails) {
         
         // Get userId from CustomUserDetails (UUID type)
@@ -75,7 +75,7 @@ public class ProfileController {
         }
         
         String username = userDetails.getUsername();
-        ProfilePictureDto result = profilePictureService.getProfilePictureUrl(UUID.fromString(username));
+        String result = profilePictureService.getProfilePictureUrl(UUID.fromString(username));
         
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
