@@ -1,6 +1,6 @@
-package com.tellinbox.common.exception;
+package com.tellinbox.tellinbox_api.common.exception;
 
-import com.tellinbox.common.exception.TellInboxCustomException.*;
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

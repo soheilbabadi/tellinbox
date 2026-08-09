@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.invitation.service;
 
-import com.tellinbox.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.invitation.dto.InvitationDto;
 import com.tellinbox.tellinbox_api.invitation.entity.Invitation;
 import com.tellinbox.tellinbox_api.invitation.repository.InvitationRepository;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class InvitationServiceImpl {
+public class InvitationServiceImpl implements InvitationService {
 
     private final InvitationRepository invitationRepository;
     private final UserRepository userRepository;
@@ -29,6 +29,7 @@ public class InvitationServiceImpl {
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
+    @Override
     public InvitationDto createInvitation(UUID userId, Integer maxUses, Integer expiresInSeconds) {
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("User not found"));
@@ -49,6 +50,7 @@ public class InvitationServiceImpl {
         return toDto(invitation);
     }
 
+    @Override
     public InvitationDto updateInvitation(String token, Integer maxUses, Integer expiresInSeconds) {
         Invitation invitation = invitationRepository.findByToken(token)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
@@ -73,6 +75,7 @@ public class InvitationServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public InvitationDto getInvitationByToken(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
@@ -80,6 +83,7 @@ public class InvitationServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<InvitationDto> getUserInvitations(UUID userId) {
         return invitationRepository.findAll().stream()
                 .filter(inv -> inv.getUser().getId().equals(userId))
@@ -87,6 +91,7 @@ public class InvitationServiceImpl {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public void deactivateInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
@@ -94,6 +99,7 @@ public class InvitationServiceImpl {
         invitationRepository.save(invitation);
     }
 
+    @Override
     public void activateInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
@@ -101,6 +107,7 @@ public class InvitationServiceImpl {
         invitationRepository.save(invitation);
     }
 
+    @Override
     public Invitation validateAndUseInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invalid invitation token"));

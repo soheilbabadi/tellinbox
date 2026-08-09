@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.user.controller;
 
-import com.tellinbox.tellinbox_api.config.security.CustomUserDetails;
+import com.tellinbox.tellinbox_api.security.CustomUserDetails;
 import com.tellinbox.tellinbox_api.user.service.ProfilePictureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ public class ProfileController {
      * Replaces the existing picture if one exists.
      */
     @PostMapping(value = "/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProfilePictureDto> uploadProfilePicture(
+    public ResponseEntity<?> uploadProfilePicture(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails) {
         
@@ -36,7 +36,7 @@ public class ProfileController {
             userId = customUserDetails.getUserId();
         }
         
-        String username = userDetails.getUsername();
+        UUID username = UUID.fromString(userDetails.getUsername());
         ProfilePictureDto result = profilePictureService.uploadProfilePicture(username, file);
         
         return new ResponseEntity<>(result, HttpStatus.OK);
@@ -56,7 +56,7 @@ public class ProfileController {
         }
         
         String username = userDetails.getUsername();
-        profilePictureService.deleteProfilePicture(username);
+        profilePictureService.deleteProfilePicture(UUID.fromString(username));
         
         return new ResponseEntity<>(Map.of("message", "Profile picture deleted successfully"), HttpStatus.OK);
     }
@@ -75,7 +75,7 @@ public class ProfileController {
         }
         
         String username = userDetails.getUsername();
-        ProfilePictureDto result = profilePictureService.getProfilePictureUrl(username);
+        ProfilePictureDto result = profilePictureService.getProfilePictureUrl(UUID.fromString(username));
         
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

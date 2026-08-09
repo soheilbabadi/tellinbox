@@ -1,7 +1,7 @@
 package com.tellinbox.tellinbox_api.config;
 
-import com.tellinbox.tellinbox_api.config.security.CustomUserDetailsService;
-import com.tellinbox.tellinbox_api.config.security.JwtAuthenticationFilter;
+import com.tellinbox.tellinbox_api.security.CustomUserDetailsService;
+import com.tellinbox.tellinbox_api.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

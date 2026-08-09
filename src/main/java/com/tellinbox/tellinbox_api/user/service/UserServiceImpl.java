@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.user.service;
 
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.user.dto.UserDto;
 import com.tellinbox.tellinbox_api.user.dto.UserProfileDto;
 import com.tellinbox.tellinbox_api.user.dto.UserRegistrationRequest;

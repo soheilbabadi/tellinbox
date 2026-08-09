@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.invitation.controller;
 
-import com.tellinbox.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.invitation.dto.InvitationDto;
 import com.tellinbox.tellinbox_api.invitation.service.InvitationServiceImpl;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
@@ -36,7 +36,7 @@ public class InvitationController {
             @RequestParam(required = false) Integer expiresInSeconds,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserIdFromUsername(userDetails.getUsername());
+        UUID userId = getUserIdFromUsername(userDetails.getUsername());
         
         InvitationDto invitation = invitationServiceImpl.createInvitation(userId, maxUses, expiresInSeconds);
         return new ResponseEntity<>(invitation, HttpStatus.CREATED);

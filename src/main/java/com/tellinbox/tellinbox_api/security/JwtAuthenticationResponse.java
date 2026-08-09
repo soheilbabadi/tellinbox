@@ -1,4 +1,4 @@
-package com.tellinbox.tellinbox_api.config.security;
+package com.tellinbox.tellinbox_api.security;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.tellinbox.common.config;
+package com.tellinbox.tellinbox_api.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
