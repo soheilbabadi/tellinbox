@@ -92,6 +92,12 @@
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
 		</dependency>
+		<!-- Apache Commons Math for Trust Score Calculation -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
+		</dependency>
 		<!-- MinIO Client Dependency -->
 		<dependency>
 			<groupId>io.minio</groupId>

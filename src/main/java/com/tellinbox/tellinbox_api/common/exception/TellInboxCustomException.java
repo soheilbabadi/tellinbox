@@ -53,6 +53,17 @@ public class TellInboxCustomException extends RuntimeException {
         }
     }
 
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public static class ResourceForbiddenException extends RuntimeException {
+        @Serial
+        private static final long serialVersionUID = 8824943035015754070L;
+
+        public ResourceForbiddenException(String message) {
+            super(message);
+            logException(this, message);
+        }
+    }
+
     @ResponseStatus(value = HttpStatus.CONFLICT)
     public static class DuplicateEntityException extends RuntimeException {
         @Serial
@@ -75,7 +86,6 @@ public class TellInboxCustomException extends RuntimeException {
         }
     }
 
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
     public static class ExcelException extends RuntimeException {
         @Serial
         private static final long serialVersionUID = -9214904749662505366L;
@@ -113,7 +123,6 @@ public class TellInboxCustomException extends RuntimeException {
         }
     }
 
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
     public static class FileContentException extends RuntimeException {
         @Serial
         private static final long serialVersionUID = 8038292358982007090L;
