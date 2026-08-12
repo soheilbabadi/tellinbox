@@ -43,7 +43,7 @@ public class TellInboxExceptionHandler {
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.joining(", "));
         String localizedMessage = getMessage("exception.constraint_violation", message);
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, localizedMessage, request);
+        return build(HttpStatus.valueOf(422), localizedMessage, request);
     }
 
     @ExceptionHandler(TransactionException.class)
@@ -99,7 +99,7 @@ public class TellInboxExceptionHandler {
     public ResponseEntity<ErrorResponse> handleFileContentException(
             FileContentException ex, HttpServletRequest request) {
         String localizedMessage = getMessage("exception.file_content_error", ex.getMessage());
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, localizedMessage, request);
+        return build(HttpStatus.valueOf(422), localizedMessage, request);
     }
 
     @ExceptionHandler(ParentNotFoundException.class)

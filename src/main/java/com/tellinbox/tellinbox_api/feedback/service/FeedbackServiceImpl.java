@@ -9,6 +9,7 @@ import com.tellinbox.tellinbox_api.feedback.mapper.FeedbackMapper;
 import com.tellinbox.tellinbox_api.feedback.model.FeedbackModel;
 import com.tellinbox.tellinbox_api.feedback.model.FeedbackReportModel;
 import com.tellinbox.tellinbox_api.feedback.repository.FeedbackRepository;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -399,7 +400,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FeedbackResponse> getFeedbacksByRelationshipType(UUID receiverId, String relationshipType) {
+    public List<FeedbackResponse> getFeedbacksByRelationshipType(UUID receiverId, RelationshipType relationshipType) {
         log.debug("Finding feedbacks by relationship type: {} for receiver: {}", relationshipType, receiverId);
         return feedbackRepository.findFeedbacksByRelationshipType(receiverId, relationshipType)
             .stream()

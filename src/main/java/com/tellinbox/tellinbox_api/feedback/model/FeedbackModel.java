@@ -4,6 +4,7 @@ import com.tellinbox.tellinbox_api.feedback.dto.FeedbackResponse;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackPurpose;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import jakarta.persistence.*;
 import lombok.*;
@@ -153,8 +154,9 @@ public class FeedbackModel {
      * Relationship type between author and receiver
      * (FRIEND, COLLEAGUE, MANAGER, etc.)
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "relationship_type", length = 30)
-    private String relationshipType;
+    private RelationshipType relationshipType;
 
     /**
      * Overall rating (1-5 stars)

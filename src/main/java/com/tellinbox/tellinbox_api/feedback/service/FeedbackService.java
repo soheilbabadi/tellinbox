@@ -4,6 +4,7 @@ import com.tellinbox.tellinbox_api.feedback.dto.FeedbackRequest;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackResponse;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -235,7 +236,7 @@ public interface FeedbackService {
      * @param relationshipType Relationship type
      * @return List of feedback DTOs
      */
-    List<FeedbackResponse> getFeedbacksByRelationshipType(UUID receiverId, String relationshipType);
+    List<FeedbackResponse> getFeedbacksByRelationshipType(UUID receiverId, RelationshipType relationshipType);
 
     // ==================== Statistics & Analytics ====================
 

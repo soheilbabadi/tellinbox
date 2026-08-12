@@ -6,6 +6,7 @@ import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,4 +34,9 @@ public class FeedbackCreateRequest {
     private UUID feedbackRequestId;
     private String authorIp;
     private String authorUserAgent;
+    
+    /**
+     * List of category scores for detailed feedback evaluation
+     */
+    private List<CategoryScoreRequest> categoryScores;
 }

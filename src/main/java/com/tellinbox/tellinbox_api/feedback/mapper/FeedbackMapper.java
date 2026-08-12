@@ -5,6 +5,7 @@ import com.tellinbox.tellinbox_api.feedback.dto.FeedbackResponse;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
 import com.tellinbox.tellinbox_api.feedback.model.FeedbackModel;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import org.springframework.stereotype.Component;
 
@@ -58,6 +59,9 @@ public class FeedbackMapper {
             return null;
         }
 
+        RelationshipType relationshipType = feedback.getRelationshipType();
+        String relationshipTypePersianName = relationshipType != null ? relationshipType.getPersianName() : null;
+
         return FeedbackResponse.builder()
                 .id(feedback.getId())
                 .createdAt(feedback.getCreatedAt())
@@ -76,7 +80,8 @@ public class FeedbackMapper {
                 .status(feedback.getStatus() != null ? feedback.getStatus().name() : null)
                 .visibility(feedback.getVisibility() != null ? feedback.getVisibility().name() : null)
                 .purpose(feedback.getPurpose() != null ? feedback.getPurpose().name() : null)
-                .relationshipType(feedback.getRelationshipType())
+                .relationshipType(relationshipType != null ? relationshipType.name() : null)
+                .relationshipTypePersianName(relationshipTypePersianName)
                 .overallRating(feedback.getOverallRating())
                 .isRead(feedback.getIsRead())
                 .readAt(feedback.getReadAt())

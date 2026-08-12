@@ -2,6 +2,9 @@ package com.tellinbox.tellinbox_api.user.enums;
 
 import lombok.Getter;
 
+/**
+ * نسبت نویسنده بازخورد با گیرنده
+ */
 @Getter
 public enum RelationshipType {
     FRIEND("دوست"),
@@ -9,9 +12,8 @@ public enum RelationshipType {
     MANAGER("مدیر"),
     CUSTOMER("مشتری"),
     CLASSMATE("همکلاسی"),
-    FAMILY("عضو خانواده"),
-    PARTNER("شریک"),
-    OTHER("سایر");
+    FAMILY_MEMBER("عضو خانواده"),
+    ANONYMOUS("ناشناس");
 
     private final String persianName;
 
