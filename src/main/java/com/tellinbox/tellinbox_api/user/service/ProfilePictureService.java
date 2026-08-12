@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.user.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -32,5 +33,6 @@ public interface ProfilePictureService {
      * @param userId User UUID
      * @return Profile picture URL or null if not set
      */
+    @Cacheable(value = "profilePictures", key = "#userId")
     String getProfilePictureUrl(UUID userId);
 }
