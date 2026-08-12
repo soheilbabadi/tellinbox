@@ -26,6 +26,9 @@ public interface UserRepository extends JpaRepository<UserModel, UUID> {
     Optional<UserModel> findByEmail(String email);
     Optional<UserModel> findByUsername(String username);
     Optional<UserModel> findByMobileOrEmail(String mobile, String email);
+    
+    @Query("SELECT u FROM UserModel u WHERE u.username = :username OR u.mobile = :mobile")
+    Optional<UserModel> findByUsernameOrMobile(@Param("username") String username, @Param("mobile") String mobile);
 
     boolean existsByMobile(String mobile);
     boolean existsByEmail(String email);

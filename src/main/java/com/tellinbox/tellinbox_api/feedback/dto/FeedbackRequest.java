@@ -3,6 +3,7 @@ package com.tellinbox.tellinbox_api.feedback.dto;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackPurpose;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import lombok.*;
 
 import java.util.UUID;
@@ -28,7 +29,7 @@ public class FeedbackRequest {
     private FeedbackStatus status;
     private FeedbackVisibility visibility;
     private FeedbackPurpose purpose;
-    private String relationshipType;
+    private RelationshipType relationshipType;
     private Double overallRating;
     private UUID feedbackRequestId;
 }
