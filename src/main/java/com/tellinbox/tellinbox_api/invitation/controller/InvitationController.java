@@ -1,11 +1,12 @@
 package com.tellinbox.tellinbox_api.invitation.controller;
 
-import com.tellinbox.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.invitation.dto.InvitationDto;
 import com.tellinbox.tellinbox_api.invitation.service.InvitationServiceImpl;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InvitationController {
 
+    private final MessageSource messageSource;
     private final InvitationServiceImpl invitationServiceImpl;
     private final UserRepository userRepository;
 
@@ -36,7 +38,7 @@ public class InvitationController {
             @RequestParam(required = false) Integer expiresInSeconds,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserIdFromUsername(userDetails.getUsername());
+        UUID userId = getUserIdFromUsername(userDetails.getUsername());
         
         InvitationDto invitation = invitationServiceImpl.createInvitation(userId, maxUses, expiresInSeconds);
         return new ResponseEntity<>(invitation, HttpStatus.CREATED);
@@ -108,4 +110,15 @@ public class InvitationController {
                 .map(UserModel::getId)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("User not found with identifier: " + username));
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

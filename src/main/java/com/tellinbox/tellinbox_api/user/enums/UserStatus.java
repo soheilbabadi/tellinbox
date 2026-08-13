@@ -26,4 +26,24 @@ public enum UserStatus {
     public boolean isDeleted() {
         return this == DELETED;
     }
+
+    public static UserStatus fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (UserStatus item : UserStatus.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
 }

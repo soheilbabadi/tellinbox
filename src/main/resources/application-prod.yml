@@ -4,12 +4,12 @@ spring:
     activate:
       on-profile: prod
   
-  # Database - PostgreSQL for production
+  # Database - PostgreSQL for production (Docker)
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tellinbox}
+    url: jdbc:postgresql://localhost:5432/tellinbox_db
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: admin
+    password: admin
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -24,11 +24,12 @@ spring:
       hibernate:
         format_sql: false
   
-  # Flyway for database migrations
-  flyway:
+  # Liquibase for database migrations
+  liquibase:
     enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    contexts: production
   
   # Jackson for JSON processing
   jackson:
@@ -36,7 +37,7 @@ spring:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
 
-# Logging - Production settings (file-based via logback-spring.xml)
+# Logging - Production settings
 logging:
   level:
     root: INFO
@@ -44,16 +45,16 @@ logging:
     org.hibernate.SQL: OFF
     org.springframework.security: WARN
 
-# MinIO - Production endpoint
+# MinIO - Local Docker endpoint
 minio:
-  url: ${MINIO_URL:https://s3.amazonaws.com}
-  bucket: ${MINIO_BUCKET:tellinbox-prod}
-  access-key: ${MINIO_ACCESS_KEY}
-  secret-key: ${MINIO_SECRET_KEY}
+  url: http://localhost:9000
+  bucket: tellinbox
+  access-key: admin
+  secret-key: adminadmin
 
-# JWT - Strict security settings for production
+# JWT - Production settings
 jwt:
-  secret: ${JWT_SECRET}
+  secret: "T3ll1nb0x-S3cur3-K3y-2024-Pr0duct10n-JWT-S3cr3t-K3y-F4rs1-L0c4l-D0ck3r"
   expiration-ms: 3600000 # 1 hour
   refresh-expiration-ms: 86400000 # 24 hours
   issuer: tellinbox
@@ -61,9 +62,10 @@ jwt:
 
 # Server settings
 server:
-  port: ${SERVER_PORT:8080}
+  port: 8080
   servlet:
     context-path: /api
+    application-display-name: tellinbox
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,application/json,application/javascript

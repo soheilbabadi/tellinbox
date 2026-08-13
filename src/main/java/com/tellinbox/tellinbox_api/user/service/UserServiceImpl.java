@@ -1,5 +1,10 @@
 package com.tellinbox.tellinbox_api.user.service;
 
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.security.CustomUserDetails;
+import com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse;
+import com.tellinbox.tellinbox_api.security.JwtTokenProvider;
+import com.tellinbox.tellinbox_api.user.dto.UpdateProfileRequest;
 import com.tellinbox.tellinbox_api.user.dto.UserDto;
 import com.tellinbox.tellinbox_api.user.dto.UserProfileDto;
 import com.tellinbox.tellinbox_api.user.dto.UserRegistrationRequest;
@@ -7,14 +12,17 @@ import com.tellinbox.tellinbox_api.user.enums.UserStatus;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.model.UserProfileModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
+import io.micrometer.core.instrument.config.validate.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,8 +41,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final MessageSource messageSource;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // ==================== Core CRUD Operations ====================
 
@@ -45,12 +55,12 @@ public class UserServiceImpl implements UserService {
 
         // Check if mobile already exists
         if (userRepository.existsByMobile(request.getMobile())) {
-            throw new TellInboxCustomException.DuplicateEntityException("کاربری با این شماره موبایل وجود دارد");
+            throw new  TellInboxCustomException.DuplicateEntityException(getMessage("error.DuplicateEntityException.user_with_mobile_exists"));
         }
 
         // Check if email already exists (if provided)
         if (request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
-            throw new TellInboxCustomException.DuplicateEntityException("کاربری با این ایمیل وجود دارد");
+            throw new  TellInboxCustomException.DuplicateEntityException(getMessage("error.DuplicateEntityException.user_with_email_exists"));
         }
 
         // Set default profile picture if not provided
@@ -142,7 +152,7 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user profile for ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         // Update fields
         if (dto.getFullName() != null) {
@@ -180,7 +190,7 @@ public class UserServiceImpl implements UserService {
         
         int deleted = userRepository.softDeleteUser(userId);
         if (deleted == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد یا قبلاً حذف شده است");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found_or_deleted"));
         }
         
         log.info("User soft deleted successfully: {}", userId);
@@ -196,7 +206,7 @@ public class UserServiceImpl implements UserService {
         
         int deleted = userRepository.hardDeleteUser(userId);
         if (deleted == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found"));
         }
         
         log.info("User hard deleted successfully: {}", userId);
@@ -211,10 +221,10 @@ public class UserServiceImpl implements UserService {
 
         int updated = userRepository.updateUserStatus(userId, status);
         if (updated == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found"));
         }
 
-        return findById(userId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+        return findById(userId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
     }
 
     @Override
@@ -223,7 +233,7 @@ public class UserServiceImpl implements UserService {
         log.info("Verifying user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         user.setIsVerified(true);
         UserModel updatedUser = userRepository.save(user);
@@ -238,7 +248,7 @@ public class UserServiceImpl implements UserService {
         log.info("Verifying email for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         user.setIsEmailVerified(true);
         UserModel updatedUser = userRepository.save(user);
@@ -265,12 +275,12 @@ public class UserServiceImpl implements UserService {
         log.info("Updating password for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         // Verify current password if exists
         if (user.getPasswordHash() != null) {
             if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-                throw new TellInboxCustomException.ValidationException("رمز عبور فعلی اشتباه است");
+                 throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.current_password_incorrect"));
             }
         }
 
@@ -287,7 +297,7 @@ public class UserServiceImpl implements UserService {
         log.info("Resetting password for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -301,7 +311,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Updating last login for user: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         user.updateLastLogin(ip, userAgent);
         userRepository.save(user);
@@ -393,4 +403,281 @@ public class UserServiceImpl implements UserService {
             .map(UserDto::from)
             .collect(Collectors.toList());
     }
-}
+
+    // ==================== Authentication ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public JwtAuthenticationResponse authenticate(String usernameOrMobile, String password) {
+        log.info("Authenticating user with usernameOrMobile: {}", usernameOrMobile);
+
+        // Find user by username or mobile
+        UserModel user = userRepository.findByUsernameOrMobile(usernameOrMobile, usernameOrMobile)
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
+
+        // Check if user is deleted
+        if (user.getDeletedAt() != null) {
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_deleted"));
+        }
+
+        // Check if user is active
+        if (user.getStatus() != UserStatus.ACTIVE) {
+             throw new  TellInboxCustomException.ResourceForbiddenException(getMessage("error.ResourceForbiddenException.account_deactivated"));
+        }
+
+        // Verify password
+        if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+             throw new  TellInboxCustomException.ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.password_incorrect"));
+        }
+
+        // Create CustomUserDetails
+        CustomUserDetails userDetails = CustomUserDetails.create(
+            user.getId(),
+            user.getUsername() != null ? user.getUsername() : user.getMobile(),
+            user.getPasswordHash(),
+            List.of(() -> "ROLE_" + user.getRole().name())
+        );
+
+        // Generate tokens
+        String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+
+        log.info("User authenticated successfully: {}", user.getId());
+
+        return JwtAuthenticationResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .tokenType("Bearer")
+            .expiresIn(jwtTokenProvider.getJwtExpirationMs())
+            .userId(user.getId().toString())
+            .role(user.getRole().name())
+            .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JwtAuthenticationResponse refreshToken(String refreshToken) {
+        log.info("Refreshing access token");
+
+        // Validate refresh token
+        UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        if (userId == null) {
+             throw new  TellInboxCustomException.ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.refresh_token_invalid"));
+        }
+
+        UserModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
+
+        // Check if user is deleted or inactive
+        if (user.getDeletedAt() != null || user.getStatus() != UserStatus.ACTIVE) {
+             throw new  TellInboxCustomException.ResourceForbiddenException(getMessage("error.ResourceForbiddenException.account_deactivated"));
+        }
+
+        // Create CustomUserDetails
+        CustomUserDetails userDetails = CustomUserDetails.create(
+            user.getId(),
+            user.getUsername() != null ? user.getUsername() : user.getMobile(),
+            user.getPasswordHash(),
+            List.of(() -> "ROLE_" + user.getRole().name())
+        );
+
+        // Validate refresh token against user
+        if (!jwtTokenProvider.validateToken(refreshToken, userDetails)) {
+             throw new  TellInboxCustomException.ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.refresh_token_invalid_or_expired"));
+        }
+
+        // Generate new access token
+        String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
+
+        log.info("Access token refreshed successfully for user: {}", userId);
+
+        return JwtAuthenticationResponse.builder()
+            .accessToken(newAccessToken)
+            .refreshToken(refreshToken)  // Return same refresh token
+            .tokenType("Bearer")
+            .expiresIn(jwtTokenProvider.getJwtExpirationMs())
+            .userId(user.getId().toString())
+            .role(user.getRole().name())
+            .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserDto getProfile(UUID userId) {
+        log.debug("Getting profile for user: {}", userId);
+
+        UserModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
+
+        // Check if user is deleted
+        if (user.getDeletedAt() != null) {
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_deleted"));
+        }
+
+        return UserDto.from(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDto updateProfile(UUID userId, UpdateProfileRequest request) {
+        log.info("Updating profile for user: {}", userId);
+
+        UserModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
+
+        // Check if user is deleted
+        if (user.getDeletedAt() != null) {
+            throw new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_deleted"));
+        }
+
+        // Update fields if provided
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+        if (request.getUsername() != null) {
+            // Check if username is already taken by another user
+            Optional<UserModel> existingUser = userRepository.findByUsername(request.getUsername());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new TellInboxCustomException.DuplicateEntityException(getMessage("error.DuplicateEntityException.username_already_taken"));
+            }
+            user.setUsername(request.getUsername());
+        }
+        if (request.getEmail() != null) {
+            // Check if email is already taken by another user
+            Optional<UserModel> existingUser = userRepository.findByEmail(request.getEmail());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new  TellInboxCustomException.DuplicateEntityException(getMessage("error.DuplicateEntityException.email_already_registered"));
+            }
+            user.setEmail(request.getEmail());
+        }
+        if (request.getBio() != null) {
+            user.setBio(request.getBio());
+        }
+        if (request.getProfilePictureUrl() != null) {
+            user.setProfilePictureUrl(request.getProfilePictureUrl());
+        }
+        if (request.getGender() != null) {
+            try {
+                user.setGender(com.tellinbox.tellinbox_api.user.enums.Gender.valueOf(request.getGender().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new TellInboxCustomException.ValidationException(getMessage("error.ValidationException.gender_invalid"));
+            }
+        }
+        if (request.getBirthDate() != null) {
+            try {
+                user.setBirthDate(LocalDate.parse(request.getBirthDate()).atStartOfDay());
+            } catch (Exception e) {
+                throw new TellInboxCustomException.ValidationException(getMessage("error.ValidationException.birth_date_invalid"));
+            }
+        }
+        if (request.getPreferredLanguage() != null) {
+            user.setPreferredLanguage(request.getPreferredLanguage());
+        }
+        if (request.getTimezone() != null) {
+            user.setTimezone(request.getTimezone());
+        }
+
+        // Update profile completeness
+        boolean isComplete = user.getFullName() != null && !user.getFullName().isBlank()
+            && user.getUsername() != null && !user.getUsername().isBlank()
+            && user.getProfilePictureUrl() != null && !user.getProfilePictureUrl().isBlank();
+        user.setIsProfileComplete(isComplete);
+
+        UserModel updatedUser = userRepository.save(user);
+        log.info("Profile updated successfully for user: {}", userId);
+
+        return UserDto.from(updatedUser);
+    }
+
+    // ==================== OTP Authentication ====================
+
+    @Override
+    @Transactional
+    public JwtAuthenticationResponse authenticateWithOtp(String mobile) {
+        log.info("Authenticating user with OTP, mobile: {}", mobile);
+
+        // Find or create user
+        UserModel user = userRepository.findByMobile(mobile)
+            .orElseGet(() -> {
+                // Auto-register new user
+                UserModel newUser = UserModel.builder()
+                    .mobile(mobile)
+                    .fullName("کاربر " + mobile.substring(mobile.length() - 4))
+                    .username(null)
+                    .email(null)
+                    .status(UserStatus.ACTIVE)
+                    .isVerified(true)
+                    .isEmailVerified(false)
+                    .isProfileComplete(false)
+                    .feedbacksCount(0)
+                    .averageScore(0.0)
+                    .trustScore(0.0)
+                    .build();
+                
+                UserProfileModel profile = UserProfileModel.builder()
+                    .user(newUser)
+                    .receiveAnonymousFeedback(true)
+                    .receiveNamedFeedback(true)
+                    .showStatistics(true)
+                    .showAverageScore(true)
+                    .enableAiAnalysis(true)
+                    .receiveEmailNotifications(false)
+                    .receiveSmsNotifications(true)
+                    .receivePushNotifications(true)
+                    .itemsPerPage(20)
+                    .theme("light")
+                    .build();
+                
+                newUser.setProfile(profile);
+                return userRepository.save(newUser);
+            });
+
+        // Update last login
+        user.updateLastLogin(null, null);
+        userRepository.save(user);
+
+        // Generate tokens
+        CustomUserDetails userDetails = CustomUserDetails.create(
+            user.getId(),
+            user.getMobile(),
+            null,
+            java.util.Collections.emptyList()
+        );
+        String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+
+        log.info("User authenticated successfully with OTP: {}", mobile);
+
+        return JwtAuthenticationResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .tokenType("Bearer")
+            .expiresIn(jwtTokenProvider.getJwtExpirationMs())
+            .userId(user.getId().toString())
+            .build();
+    }
+
+    // ==================== Google Authentication ====================
+
+    @Override
+    @Transactional
+    public JwtAuthenticationResponse authenticateWithGoogle(String googleIdToken) {
+        log.info("Authenticating user with Google token");
+
+        // TODO: Implement Google token verification using google-auth-library
+        // For now, this is a placeholder that will be implemented when Google OAuth dependencies are added
+        
+        throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.google_login_not_implemented"));
+    }
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

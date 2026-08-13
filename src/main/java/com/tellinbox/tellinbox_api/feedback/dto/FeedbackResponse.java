@@ -90,6 +90,11 @@ public class FeedbackResponse {
     private String relationshipType;
 
     /**
+     * Relationship type Persian name
+     */
+    private String relationshipTypePersianName;
+
+    /**
      * Overall rating
      */
     private Double overallRating;

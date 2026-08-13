@@ -1,13 +1,14 @@
 package com.tellinbox.tellinbox_api.user.service;
 
-import com.tellinbox.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import io.minio.*;
-import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProfilePictureServiceImpl implements ProfilePictureService {
 
+    private final MessageSource messageSource;
     private final MinioClient minioClient;
     private final UserRepository userRepository;
 
@@ -35,6 +37,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "profilePictures", key = "#userId")
     public String uploadProfilePicture(UUID userId, MultipartFile file) {
         log.info("Uploading profile picture for user ID: {}", userId);
 
@@ -44,7 +47,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
             // Ensure bucket exists
             ensureBucketExists();
@@ -81,19 +84,20 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to upload profile picture for user ID: {}", userId, e);
-            throw new TellInboxCustomException.ApplicationServerException("خطا در بارگذاری تصویر پروفایل: " + e.getMessage());
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.profile_image_upload_error") + e.getMessage());
         }
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "profilePictures", key = "#userId")
     public void deleteProfilePicture(UUID userId) {
         log.info("Deleting profile picture for user ID: {}", userId);
 
         try {
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
             String currentProfilePictureUrl = user.getProfilePictureUrl();
             
@@ -124,7 +128,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to delete profile picture for user ID: {}", userId, e);
-            throw new TellInboxCustomException.ApplicationServerException("خطا در حذف تصویر پروفایل: " + e.getMessage());
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.profile_image_delete_error") + e.getMessage());
         }
     }
 
@@ -135,7 +139,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         try {
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
             String profilePictureUrl = user.getProfilePictureUrl();
             
@@ -149,7 +153,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to get profile picture URL for user ID: {}", userId, e);
-            throw new TellInboxCustomException.ApplicationServerException("خطا در دریافت لینک تصویر پروفایل: " + e.getMessage());
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.profile_image_link_error") + e.getMessage());
         }
     }
 
@@ -158,19 +162,19 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new TellInboxCustomException.ValidationException("فایل تصویر خالی است");
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.image_file_empty"));
         }
 
         // Check file size (max 5MB)
         long maxSize = 5 * 1024 * 1024; // 5MB
         if (file.getSize() > maxSize) {
-            throw new TellInboxCustomException.ValidationException("حجم فایل نباید بیشتر از 5 مگابایت باشد");
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.file_size_exceeds_5mb"));
         }
 
         // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !isValidImageType(contentType)) {
-            throw new TellInboxCustomException.ValidationException("فایل باید از نوع تصویر باشد (JPEG, PNG, GIF, WebP)");
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.file_must_be_image"));
         }
     }
 
@@ -237,4 +241,15 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
             );
         }
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

@@ -3,6 +3,7 @@ package com.tellinbox.tellinbox_api.feedback.repository;
 import com.tellinbox.tellinbox_api.feedback.model.FeedbackModel;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -239,6 +240,20 @@ public interface FeedbackRepository extends JpaRepository<FeedbackModel, UUID> {
     long countByStatus(@Param("status") FeedbackStatus status);
 
     /**
+     * Count feedbacks by author ID
+     */
+    int countByAuthorId(UUID authorId);
+
+    /**
+     * Find feedbacks by receiver ID created after a specific date
+     */
+    @Query("SELECT f FROM FeedbackModel f WHERE f.receiver.id = :receiverId AND f.createdAt > :createdAt")
+    List<FeedbackModel> findByReceiverIdAndCreatedAtAfter(
+        @Param("receiverId") UUID receiverId,
+        @Param("createdAt") java.time.Instant createdAt
+    );
+
+    /**
      * Get average rating for a user
      */
     @Query("SELECT AVG(f.overallRating) FROM FeedbackModel f WHERE f.receiver.id = :userId")
@@ -291,6 +306,16 @@ public interface FeedbackRepository extends JpaRepository<FeedbackModel, UUID> {
            "AND f.relationshipType = :relationshipType AND f.isDeleted = false")
     List<FeedbackModel> findFeedbacksByRelationshipType(
         @Param("userId") UUID userId,
-        @Param("relationshipType") String relationshipType
+        @Param("relationshipType") RelationshipType relationshipType
+    );
+
+    /**
+     * Count feedbacks by relationship type
+     */
+    @Query("SELECT COUNT(f) FROM FeedbackModel f WHERE f.receiver.id = :userId " +
+           "AND f.relationshipType = :relationshipType AND f.isDeleted = false")
+    Long countByRelationshipType(
+        @Param("userId") UUID userId,
+        @Param("relationshipType") RelationshipType relationshipType
     );
 }

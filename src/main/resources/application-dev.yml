@@ -3,40 +3,86 @@ spring:
   config:
     activate:
       on-profile: dev
-  
-  # Database - H2 for easy local development
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: babadishyl@gmail.com
+    password: dksettmsoavjetqn
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 10MB
+
+  # Database - PostgreSQL for development (Docker)
   datasource:
-    url: jdbc:h2:mem:tellinbox_dev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:postgresql://localhost:5432/tellinbox_db
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    password: admin
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
   
-  # Logging - Enable SQL debugging
+  # Liquibase for database migrations
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    contexts: development
+  
+  # Jackson for JSON processing
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+# Logging - Development settings
 logging:
   level:
     root: INFO
     com.tellinbox: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  
-# MinIO - Local development endpoint
+    org.springframework.security: DEBUG
+
+# MinIO - Local Docker endpoint
 minio:
   url: http://localhost:9000
-  bucket: tellinbox-dev
-  
-# JWT - Relaxed settings for development
+  bucket: tellinbox
+  access-key: admin
+  secret-key: adminadmin
+
+# JWT - Development settings
 jwt:
-  secret: ${JWT_SECRET:dev-secret-key-for-local-development-only-do-not-use-in-production-12345678}
+  secret: "T3ll1nb0x-S3cur3-K3y-2024-D3v3l0pm3nt-JWT-S3cr3t-K3y-F4rs1-L0c4l-D0ck3r"
   expiration-ms: 86400000 # 24 hours
   refresh-expiration-ms: 604800000 # 7 days
+  issuer: tellinbox
+  audience: tellinbox-app
+
+# Server settings
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    application-display-name: tellinbox
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,application/json,application/javascript
+    min-response-size: 1024

@@ -1,16 +1,20 @@
 package com.tellinbox.tellinbox_api.feedback.service;
 
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackRequest;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackResponse;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
+import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
 import com.tellinbox.tellinbox_api.feedback.mapper.FeedbackMapper;
-import com.tellinbox.tellinbox_api.feedback.model.*;
+import com.tellinbox.tellinbox_api.feedback.model.FeedbackModel;
+import com.tellinbox.tellinbox_api.feedback.model.FeedbackReportModel;
 import com.tellinbox.tellinbox_api.feedback.repository.FeedbackRepository;
-import com.tellinbox.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +38,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FeedbackServiceImpl implements FeedbackService {
 
+    private final MessageSource messageSource;
     private final FeedbackRepository feedbackRepository;
     private final UserRepository userRepository;
     private final FeedbackMapper feedbackMapper;
@@ -47,7 +52,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         // Validate receiver exists
         UserModel receiver = userRepository.findById(request.getReceiverId())
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر دریافت‌کننده یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.recipient_user_not_found")));
 
         // Validate author if not anonymous
         UserModel author = null;
@@ -55,7 +60,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         if (!isAnonymous && request.getAuthorId() != null) {
             author = userRepository.findById(request.getAuthorId())
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر ارسال‌کننده یافت نشد"));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.sender_user_not_found")));
         }
 
         // Build feedback entity using mapper
@@ -93,7 +98,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Updating feedback with ID: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         // Update fields
         if (request.getTitle() != null) {
@@ -128,7 +133,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int deleted = feedbackRepository.softDeleteFeedback(feedbackId);
         if (deleted == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد یا قبلاً حذف شده است");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found_or_deleted"));
         }
         
         log.info("Feedback soft deleted successfully: {}", feedbackId);
@@ -178,7 +183,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.markAsRead(feedbackId);
         if (updated == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
     }
 
@@ -212,10 +217,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int published = feedbackRepository.publishFeedback(feedbackId);
         if (published == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     @Override
@@ -225,10 +230,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int archived = feedbackRepository.archiveFeedback(feedbackId, archivedBy);
         if (archived == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     @Override
@@ -238,10 +243,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.updateStatus(feedbackId, status);
         if (updated == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     @Override
@@ -251,10 +256,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.updateVisibility(feedbackId, visibility);
         if (updated == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد");
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     // ==================== Response Management ====================
@@ -265,10 +270,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Adding response to feedback: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         if (!feedback.canRespond()) {
-            throw new IllegalStateException("این بازخورد نمی‌تواند پاسخ داده شود");
+            throw new IllegalStateException(getMessage("error.IllegalStateException.this_feedback_cannot_be_answered"));
         }
 
         // Create response
@@ -291,10 +296,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Updating response for feedback: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         if (feedback.getResponse() == null) {
-            throw new IllegalStateException("پاسخی برای این بازخورد وجود ندارد");
+            throw new IllegalStateException(getMessage("error.IllegalStateException.no_reply_for_this_feedback"));
         }
 
         feedback.getResponse().updateResponse(responseContent);
@@ -320,10 +325,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Reporting feedback: {} by user: {}", feedbackId, reportedBy);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("بازخورد یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         UserModel reporter = userRepository.findById(reportedBy)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر گزارش‌دهنده یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.reporter_user_not_found")));
 
         // Create report
         FeedbackReportModel report = FeedbackReportModel.builder()
@@ -397,7 +402,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FeedbackResponse> getFeedbacksByRelationshipType(UUID receiverId, String relationshipType) {
+    public List<FeedbackResponse> getFeedbacksByRelationshipType(UUID receiverId, RelationshipType relationshipType) {
         log.debug("Finding feedbacks by relationship type: {} for receiver: {}", relationshipType, receiverId);
         return feedbackRepository.findFeedbacksByRelationshipType(receiverId, relationshipType)
             .stream()
@@ -475,4 +480,15 @@ public class FeedbackServiceImpl implements FeedbackService {
     private FeedbackResponse convertToDto(FeedbackModel feedback) {
         return feedbackMapper.toDto(feedback);
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.user.service;
 
+import com.tellinbox.tellinbox_api.user.dto.UpdateProfileRequest;
 import com.tellinbox.tellinbox_api.user.dto.UserDto;
 import com.tellinbox.tellinbox_api.user.dto.UserProfileDto;
 import com.tellinbox.tellinbox_api.user.dto.UserRegistrationRequest;
@@ -218,4 +219,54 @@ public interface UserService {
      * @return List of users with incomplete profiles
      */
     List<UserDto> getUsersWithIncompleteProfiles(LocalDateTime createdBefore);
+
+    // ==================== Authentication ====================
+
+    /**
+     * Authenticate user and generate tokens
+     * @param usernameOrMobile username or mobile number
+     * @param password user password
+     * @return JWT authentication response
+     */
+    com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse authenticate(String usernameOrMobile, String password);
+
+    /**
+     * Refresh access token using refresh token
+     * @param refreshToken refresh token
+     * @return new JWT authentication response
+     */
+    com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse refreshToken(String refreshToken);
+
+    /**
+     * Get current user profile
+     * @param userId user ID
+     * @return user DTO
+     */
+    UserDto getProfile(UUID userId);
+
+    /**
+     * Update current user profile
+     * @param userId user ID
+     * @param request update profile request
+     * @return updated user DTO
+     */
+    UserDto updateProfile(UUID userId, UpdateProfileRequest request);
+
+    // ==================== OTP Authentication ====================
+
+    /**
+     * Authenticate user with OTP and generate tokens
+     * @param mobile mobile number
+     * @return JWT authentication response
+     */
+    com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse authenticateWithOtp(String mobile);
+
+    // ==================== Google Authentication ====================
+
+    /**
+     * Authenticate user with Google token and generate tokens
+     * @param googleIdToken Google ID token
+     * @return JWT authentication response
+     */
+    com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse authenticateWithGoogle(String googleIdToken);
 }
