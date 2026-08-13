@@ -105,7 +105,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Updating category: {}", categoryId);
         
         FeedbackCategoryModel existingCategory = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
         
         if (updatedCategory.getTitle() != null) {
             existingCategory.setTitle(updatedCategory.getTitle());
@@ -148,7 +148,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Soft deleting category: {}", categoryId);
         
         FeedbackCategoryModel category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
         
         category.setIsDeleted(true);
         category.setDeletedAt(LocalDateTime.now());

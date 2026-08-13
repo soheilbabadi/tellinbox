@@ -34,7 +34,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto createInvitation(UUID userId, Integer maxUses, Integer expiresInSeconds) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         String token = generateSecureToken();
         
@@ -55,7 +55,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto updateInvitation(String token, Integer maxUses, Integer expiresInSeconds) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
 
         if (maxUses != null) {
             invitation.setMaxUses(maxUses);
@@ -80,7 +80,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto getInvitationByToken(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
         return toDto(invitation);
     }
 
@@ -96,7 +96,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public void deactivateInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
         invitation.setActive(false);
         invitationRepository.save(invitation);
     }
@@ -104,7 +104,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public void activateInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
         invitation.setActive(true);
         invitationRepository.save(invitation);
     }
@@ -112,18 +112,18 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public Invitation validateAndUseInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invalid_invitation_token")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invalid_invitation_token")));
 
         if (!invitation.isActive()) {
-            throw new ValidationException(getMessage("error.ValidationException.invitation_is_no_longer_active"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.invitation_is_no_longer_active"));
         }
 
         if (invitation.getExpiresAt() != null && LocalDateTime.now().isAfter(invitation.getExpiresAt())) {
-            throw new ValidationException(getMessage("error.ValidationException.invitation_has_expired"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.invitation_has_expired"));
         }
 
         if (invitation.getMaxUses() != null && invitation.getCurrentUses() >= invitation.getMaxUses()) {
-            throw new ValidationException(getMessage("error.ValidationException.invitation_has_reached_maximum_uses"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.invitation_has_reached_maximum_uses"));
         }
 
         invitation.setCurrentUses(invitation.getCurrentUses() + 1);

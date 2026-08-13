@@ -220,7 +220,7 @@ public class JwtTokenProvider {
         if (validateToken(refreshToken, userDetails)) {
             return generateAccessToken(userDetails);
         }
-        throw new ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.invalid_refresh_token"));
+         throw new  TellInboxCustomException.ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.invalid_refresh_token"));
     }
 
     /**

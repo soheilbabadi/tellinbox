@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -138,17 +139,17 @@ public class OtpServiceImpl implements OtpService {
         if (storedOtp == null) {
             // Fallback to database if Redis expired or not found
             OtpModel otp = otpRepository.findByCodeAndIdentifier(code, identifier)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است_یا_منقضی_شده_است")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است_یا_منقضی_شده_است")));
 
             // Check if OTP is valid
             if (!otp.isValid()) {
                 if (otp.isExpired()) {
-                    throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_منقضی_شده_است"));
+                    throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_منقضی_شده_است"));
                 }
                 if (otp.getIsUsed()) {
-                    throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_قبلاً_استفاده_شده_است"));
+                    throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_قبلاً_استفاده_شده_است"));
                 }
-                throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است"));
+                throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است"));
             }
 
             // Increment attempts
@@ -167,7 +168,7 @@ public class OtpServiceImpl implements OtpService {
         } else {
             // Verify OTP from Redis
             if (!storedOtp.equals(code)) {
-                throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است"));
+                throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است"));
             }
             
             // Delete OTP from Redis after successful verification (one-time use)
@@ -260,7 +261,7 @@ public class OtpServiceImpl implements OtpService {
             log.info("OTP email sent successfully to: {}", to);
         } catch (MessagingException e) {
             log.error("Failed to send OTP email to {}: {}", to, e.getMessage());
-            throw new InternalServerErrorException(getMessage("error.InternalServerErrorException.ارسال_کد_تایید_با_خطا_مواجه_شد"));
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.InternalServerErrorException.ارسال_کد_تایید_با_خطا_مواجه_شد"));
         }
     }
 

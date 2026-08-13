@@ -47,7 +47,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
             // Ensure bucket exists
             ensureBucketExists();
@@ -97,7 +97,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
         try {
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
             String currentProfilePictureUrl = user.getProfilePictureUrl();
             
@@ -139,7 +139,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         try {
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
             String profilePictureUrl = user.getProfilePictureUrl();
             
@@ -162,19 +162,19 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new ValidationException(getMessage("error.ValidationException.فایل_تصویر_خالی_است"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.فایل_تصویر_خالی_است"));
         }
 
         // Check file size (max 5MB)
         long maxSize = 5 * 1024 * 1024; // 5MB
         if (file.getSize() > maxSize) {
-            throw new ValidationException(getMessage("error.ValidationException.حجم_فایل_نباید_بیشتر_از_5_مگابایت_باشد"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.حجم_فایل_نباید_بیشتر_از_5_مگابایت_باشد"));
         }
 
         // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !isValidImageType(contentType)) {
-            throw new ValidationException(getMessage("error.ValidationException.فایل_باید_از_نوع_تصویر_باشد_jpeg_png_gif_webp"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.فایل_باید_از_نوع_تصویر_باشد_jpeg_png_gif_webp"));
         }
     }
 
