@@ -88,7 +88,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Creating new category: {}", category.getTitle());
         
         if (categoryRepository.existsByTitle(category.getTitle())) {
-            throw new ResourceAlreadyExistsException(getMessage("error.ResourceAlreadyExistsException.عنوان_دسته_بندی_تکراری_است"));
+            throw new TellInboxCustomException.ValidationException(getMessage("error.ResourceAlreadyExistsException.عنوان_دسته_بندی_تکراری_است"));
         }
         
         category.setCreatedAt(LocalDateTime.now());

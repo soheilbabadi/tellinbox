@@ -3,7 +3,22 @@ spring:
   config:
     activate:
       on-profile: dev
-  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: babadishyl@gmail.com
+    password: dksettmsoavjetqn
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 10MB
+
   # Database - PostgreSQL for development (Docker)
   datasource:
     url: jdbc:postgresql://localhost:5432/tellinbox_db

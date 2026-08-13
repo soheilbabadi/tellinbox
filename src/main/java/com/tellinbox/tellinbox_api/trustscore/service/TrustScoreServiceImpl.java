@@ -50,12 +50,12 @@ public class TrustScoreServiceImpl implements TrustScoreService {
     private static final double MAX_FEEDBACK_COUNT_FOR_MAX_SCORE = 100.0;
 
     @Override
-    public TrustScoreDto calculateTrustScore(Long userId) {
+    public TrustScoreDto calculateTrustScore(UUID userId) {
         return calculateTrustScoreWithRecency(userId, 12); // Default: last 12 months
     }
 
     @Override
-    public TrustScoreDto calculateTrustScoreWithRecency(Long userId, Integer monthsBack) {
+    public TrustScoreDto calculateTrustScoreWithRecency(UUID userId, Integer monthsBack) {
         log.info("Calculating trust score for user {} with {} months recency", userId, monthsBack);
 
         // Verify user exists
@@ -253,14 +253,11 @@ public class TrustScoreServiceImpl implements TrustScoreService {
     private double calculateProfileCompleteness(UserModel user) {
         double completeness = 0.0;
         
-        if (user.getFirstName() != null && !user.getFirstName().isBlank()) completeness += 0.15;
-        if (user.getLastName() != null && !user.getLastName().isBlank()) completeness += 0.15;
+        if (user.getFullName() != null && !user.getFullName().isBlank()) completeness += 0.15;
         if (user.getEmail() != null && !user.getEmail().isBlank()) completeness += 0.20;
         if (user.getMobile() != null && !user.getMobile().isBlank()) completeness += 0.15;
         if (user.getBio() != null && !user.getBio().isBlank()) completeness += 0.15;
-        if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) completeness += 0.10;
-        if (user.getTitle() != null && !user.getTitle().isBlank()) completeness += 0.10;
-        
+
         return completeness;
     }
 

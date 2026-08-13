@@ -6,6 +6,7 @@ import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackVisibility;
 import com.tellinbox.tellinbox_api.feedback.service.FeedbackService;
 import com.tellinbox.tellinbox_api.security.CustomUserDetails;
+import com.tellinbox.tellinbox_api.user.enums.RelationshipType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -459,7 +460,7 @@ public class FeedbackController {
      */
     @GetMapping("/by-relationship")
     public ResponseEntity<List<FeedbackResponse>> getFeedbacksByRelationshipType(
-            @RequestParam String relationshipType,
+            @RequestParam RelationshipType relationshipType,
             @AuthenticationPrincipal UserDetails userDetails) {
         
         UUID receiverId = getCurrentUserId(userDetails);

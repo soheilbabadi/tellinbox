@@ -5,6 +5,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
@@ -12,13 +14,14 @@ import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
 /**
  * JWT Token Provider for generating, validating, and extracting claims from JWT tokens.
- * 
+ *
  * @author Tellinbox Team
  * @version 1.0
  */
@@ -35,6 +38,13 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long jwtRefreshExpirationMs; // Default 7 days
 
+    private final MessageSource messageSource;
+
+    // Constructor injection for MessageSource
+    public JwtTokenProvider(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
+
     /**
      * Get the signing key from the secret.
      */
@@ -45,41 +55,41 @@ public class JwtTokenProvider {
 
     /**
      * Generate access token for user.
-     * 
+     *
      * @param userDetails user details
      * @return JWT access token
      */
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        
+
         // Include userId in claims if available
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             claims.put("userId", customUserDetails.getUserId().toString());
         }
-        
+
         return createToken(claims, userDetails.getUsername(), jwtExpirationMs);
     }
 
     /**
      * Generate refresh token for user.
-     * 
+     *
      * @param userDetails user details
      * @return JWT refresh token
      */
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        
+
         // Include userId in claims if available
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             claims.put("userId", customUserDetails.getUserId().toString());
         }
-        
+
         return createToken(claims, userDetails.getUsername(), jwtRefreshExpirationMs);
     }
 
     /**
      * Generate token with custom claims.
-     * 
+     *
      * @param userDetails user details
      * @param userId user UUID
      * @param role user role
@@ -110,7 +120,7 @@ public class JwtTokenProvider {
 
     /**
      * Extract username from token.
-     * 
+     *
      * @param token JWT token
      * @return username
      */
@@ -120,7 +130,7 @@ public class JwtTokenProvider {
 
     /**
      * Extract user ID from token.
-     * 
+     *
      * @param token JWT token
      * @return user UUID
      */
@@ -131,7 +141,7 @@ public class JwtTokenProvider {
 
     /**
      * Extract role from token.
-     * 
+     *
      * @param token JWT token
      * @return role
      */
@@ -141,7 +151,7 @@ public class JwtTokenProvider {
 
     /**
      * Extract expiration date from token.
-     * 
+     *
      * @param token JWT token
      * @return expiration date
      */
@@ -151,7 +161,7 @@ public class JwtTokenProvider {
 
     /**
      * Extract any claim from token.
-     * 
+     *
      * @param token JWT token
      * @param claimsResolver function to extract claim
      * @return claim value
@@ -163,7 +173,7 @@ public class JwtTokenProvider {
 
     /**
      * Extract all claims from token.
-     * 
+     *
      * @param token JWT token
      * @return all claims
      */
@@ -176,17 +186,18 @@ public class JwtTokenProvider {
 
     /**
      * Check if token is expired.
-     * 
+     *
      * @param token JWT token
      * @return true if expired
      */
     public boolean isTokenExpired(String token) {
-        return getExpirationDateFromToken(token).before(new Date());
+        final Date expiration = getExpirationDateFromToken(token);
+        return expiration != null && expiration.before(new Date());
     }
 
     /**
      * Validate token.
-     * 
+     *
      * @param token JWT token
      * @param userDetails user details
      * @return true if valid
@@ -211,7 +222,7 @@ public class JwtTokenProvider {
 
     /**
      * Refresh access token using refresh token.
-     * 
+     *
      * @param refreshToken refresh token
      * @param userDetails user details
      * @return new access token
@@ -220,7 +231,9 @@ public class JwtTokenProvider {
         if (validateToken(refreshToken, userDetails)) {
             return generateAccessToken(userDetails);
         }
-         throw new  TellInboxCustomException.ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.invalid_refresh_token"));
+        throw new TellInboxCustomException.ResourceUnauthorizedException(
+                getMessage("error.ResourceUnauthorizedException.invalid_refresh_token")
+        );
     }
 
     /**
@@ -237,8 +250,23 @@ public class JwtTokenProvider {
         return jwtRefreshExpirationMs;
     }
 
+    /**
+     * Get localized message from messages_fa.properties
+     *
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
     protected String getMessage(String key, Object... args) {
-        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+        try {
+            Locale locale = LocaleContextHolder.getLocale();
+            if (locale == null || locale.getLanguage().isEmpty()) {
+                locale = Locale.forLanguageTag("fa");
+            }
+            return messageSource.getMessage(key, args, key, locale);
+        } catch (Exception e) {
+            log.warn("Message not found for key: {}, using key as fallback", key);
+            return key;
+        }
     }
-
-    }
+}

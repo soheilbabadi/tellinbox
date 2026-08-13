@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 /**
  * Controller for Trust Score management
  */
@@ -25,7 +27,7 @@ public class TrustScoreController {
      */
     @GetMapping("/{userId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<TrustScoreDto> getTrustScore(@PathVariable Long userId) {
+    public ResponseEntity<TrustScoreDto> getTrustScore(@PathVariable UUID userId) {
         TrustScoreDto trustScore = trustScoreService.calculateTrustScore(userId);
         return ResponseEntity.ok(trustScore);
     }
@@ -40,7 +42,7 @@ public class TrustScoreController {
     @GetMapping("/{userId}/custom")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<TrustScoreDto> getTrustScoreWithRecency(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @RequestParam(defaultValue = "12") Integer monthsBack) {
         TrustScoreDto trustScore = trustScoreService.calculateTrustScoreWithRecency(userId, monthsBack);
         return ResponseEntity.ok(trustScore);
@@ -55,7 +57,7 @@ public class TrustScoreController {
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<TrustScoreDto> getMyTrustScore(
-            @RequestAttribute("userId") Long userId) {
+            @RequestAttribute("userId") UUID userId) {
         TrustScoreDto trustScore = trustScoreService.calculateTrustScore(userId);
         return ResponseEntity.ok(trustScore);
     }

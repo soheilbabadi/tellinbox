@@ -128,4 +128,5 @@ public interface UserRepository extends JpaRepository<UserModel, UUID> {
            "LOWER(u.bio) LIKE LOWER(CONCAT('%', :query, '%'))) " +
            "AND u.status = 'ACTIVE'")
     Page<UserModel> searchUsers(@Param("query") String query, Pageable pageable);
+
 }
