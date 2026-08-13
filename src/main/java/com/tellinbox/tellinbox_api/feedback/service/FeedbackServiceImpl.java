@@ -52,7 +52,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         // Validate receiver exists
         UserModel receiver = userRepository.findById(request.getReceiverId())
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_دریافت_کننده_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.recipient_user_not_found")));
 
         // Validate author if not anonymous
         UserModel author = null;
@@ -60,7 +60,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         if (!isAnonymous && request.getAuthorId() != null) {
             author = userRepository.findById(request.getAuthorId())
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_ارسال_کننده_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.sender_user_not_found")));
         }
 
         // Build feedback entity using mapper
@@ -98,7 +98,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Updating feedback with ID: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         // Update fields
         if (request.getTitle() != null) {
@@ -133,7 +133,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int deleted = feedbackRepository.softDeleteFeedback(feedbackId);
         if (deleted == 0) {
-            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد_یا_قبلاً_حذف_شده_است"));
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found_or_deleted"));
         }
         
         log.info("Feedback soft deleted successfully: {}", feedbackId);
@@ -183,7 +183,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.markAsRead(feedbackId);
         if (updated == 0) {
-            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد"));
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
     }
 
@@ -217,10 +217,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int published = feedbackRepository.publishFeedback(feedbackId);
         if (published == 0) {
-            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد"));
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     @Override
@@ -230,10 +230,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int archived = feedbackRepository.archiveFeedback(feedbackId, archivedBy);
         if (archived == 0) {
-            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد"));
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     @Override
@@ -243,10 +243,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.updateStatus(feedbackId, status);
         if (updated == 0) {
-            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد"));
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     @Override
@@ -256,10 +256,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         
         int updated = feedbackRepository.updateVisibility(feedbackId, visibility);
         if (updated == 0) {
-            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد"));
+            throw new  TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found"));
         }
         
-        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+        return findById(feedbackId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
     }
 
     // ==================== Response Management ====================
@@ -270,10 +270,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Adding response to feedback: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         if (!feedback.canRespond()) {
-            throw new IllegalStateException(getMessage("error.IllegalStateException.این_بازخورد_نمی_تواند_پاسخ_داده_شود"));
+            throw new IllegalStateException(getMessage("error.IllegalStateException.this_feedback_cannot_be_answered"));
         }
 
         // Create response
@@ -296,10 +296,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Updating response for feedback: {}", feedbackId);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         if (feedback.getResponse() == null) {
-            throw new IllegalStateException(getMessage("error.IllegalStateException.پاسخی_برای_این_بازخورد_وجود_ندارد"));
+            throw new IllegalStateException(getMessage("error.IllegalStateException.no_reply_for_this_feedback"));
         }
 
         feedback.getResponse().updateResponse(responseContent);
@@ -325,10 +325,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         log.info("Reporting feedback: {} by user: {}", feedbackId, reportedBy);
 
         FeedbackModel feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.بازخورد_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         UserModel reporter = userRepository.findById(reportedBy)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_گزارش_دهنده_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.reporter_user_not_found")));
 
         // Create report
         FeedbackReportModel report = FeedbackReportModel.builder()

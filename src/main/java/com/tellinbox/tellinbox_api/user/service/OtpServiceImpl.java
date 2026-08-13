@@ -103,7 +103,7 @@ public class OtpServiceImpl implements OtpService {
         JwtAuthenticationResponse authResponse = userService.authenticateWithOtp(identifier);
         UserModel user = userRepository.findById(UUID.fromString(authResponse.getUserId()))
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(
-                        getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")
+                        getMessage("error.ResourceNotFoundException.user_not_found")
                 ));
 
         log.info("User authenticated successfully with OTP: {}", maskIdentifier(identifier));
@@ -129,7 +129,7 @@ public class OtpServiceImpl implements OtpService {
 
         if (Boolean.TRUE.equals(exists)) {
             throw new TellInboxCustomException.ResourceForbiddenException(
-                    getMessage("error.ResourceForbiddenException.لطفا_تا_۲_دقیقه_دیگر_صبر_کنید")
+                    getMessage("error.ResourceForbiddenException.please_wait_two_minutes")
             );
         }
 
@@ -164,7 +164,7 @@ public class OtpServiceImpl implements OtpService {
 
         if (recentRequests != null && recentRequests >= MAX_REQUESTS_PER_HOUR) {
             throw new TellInboxCustomException.ResourceForbiddenException(
-                    getMessage("error.ResourceForbiddenException.تعداد_درخواست_بیش_از_حد_مجاز")
+                    getMessage("error.ResourceForbiddenException.too_many_requests")
             );
         }
 
@@ -233,7 +233,7 @@ public class OtpServiceImpl implements OtpService {
             // Verify from Redis
             if (!storedOtp.equals(code)) {
                 throw new TellInboxCustomException.ResourceNotFoundException(
-                        getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است")
+                        getMessage("error.ResourceNotFoundException.verification_code_invalid")
                 );
             }
             redisTemplate.delete(redisOtpKey);
@@ -249,7 +249,7 @@ public class OtpServiceImpl implements OtpService {
     private void validateOtpFromDatabase(String identifier, String code) {
         OtpModel otp = otpRepository.findByCodeAndIdentifier(code, identifier)
                 .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(
-                        getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است_یا_منقضی_شده_است")
+                        getMessage("error.ResourceNotFoundException.verification_code_invalid_or_expired")
                 ));
 
         // Check OTP validity
@@ -263,7 +263,7 @@ public class OtpServiceImpl implements OtpService {
             otp.setIsUsed(true);
             otpRepository.save(otp);
             throw new TellInboxCustomException.ResourceForbiddenException(
-                    getMessage("error.ResourceForbiddenException.تعداد_تلاش_ناموفق_بیش_از_حد_مجاز")
+                    getMessage("error.ResourceForbiddenException.too_many_failed_attempts")
             );
         }
 
@@ -278,16 +278,16 @@ public class OtpServiceImpl implements OtpService {
     private void handleInvalidOtp(OtpModel otp) {
         if (otp.isExpired()) {
             throw new TellInboxCustomException.ResourceNotFoundException(
-                    getMessage("error.ResourceNotFoundException.کد_تایید_منقضی_شده_است")
+                    getMessage("error.ResourceNotFoundException.verification_code_expired")
             );
         }
         if (otp.getIsUsed()) {
             throw new TellInboxCustomException.ResourceNotFoundException(
-                    getMessage("error.ResourceNotFoundException.کد_تایید_قبلاً_استفاده_شده_است")
+                    getMessage("error.ResourceNotFoundException.verification_code_already_used")
             );
         }
         throw new TellInboxCustomException.ResourceNotFoundException(
-                getMessage("error.ResourceNotFoundException.کد_تایید_نامعتبر_است")
+                getMessage("error.ResourceNotFoundException.verification_code_invalid")
         );
     }
 
@@ -301,7 +301,7 @@ public class OtpServiceImpl implements OtpService {
 
             helper.setFrom(fromEmail);
             helper.setTo(to);
-            helper.setSubject(String.format("کد تایید %s", otpType.getPersianName()));
+            helper.setSubject(String.format("Verification Code: %s", otpType.getPersianName()));
 
             String emailContent = buildEmailContent(otpType.getPersianName(), otpCode);
             helper.setText(emailContent, true);
@@ -312,7 +312,7 @@ public class OtpServiceImpl implements OtpService {
         } catch (MessagingException e) {
             log.error("Failed to send OTP email to {}: {}", to, e.getMessage());
             throw new TellInboxCustomException.ApplicationServerException(
-                    getMessage("error.InternalServerErrorException.ارسال_کد_تایید_با_خطا_مواجه_شد")
+                    getMessage("error.InternalServerErrorException.verification_code_send_failed")
             );
         }
     }

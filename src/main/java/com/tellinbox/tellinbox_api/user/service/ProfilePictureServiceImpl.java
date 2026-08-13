@@ -47,7 +47,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
             // Ensure bucket exists
             ensureBucketExists();
@@ -84,7 +84,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to upload profile picture for user ID: {}", userId, e);
-            throw new TellInboxCustomException.ApplicationServerException("خطا در بارگذاری تصویر پروفایل: " + e.getMessage());
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.profile_image_upload_error") + e.getMessage());
         }
     }
 
@@ -97,7 +97,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
         try {
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
             String currentProfilePictureUrl = user.getProfilePictureUrl();
             
@@ -128,7 +128,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to delete profile picture for user ID: {}", userId, e);
-            throw new TellInboxCustomException.ApplicationServerException("خطا در حذف تصویر پروفایل: " + e.getMessage());
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.profile_image_delete_error") + e.getMessage());
         }
     }
 
@@ -139,7 +139,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         try {
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
+                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
             String profilePictureUrl = user.getProfilePictureUrl();
             
@@ -153,7 +153,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         } catch (Exception e) {
             log.error("Failed to get profile picture URL for user ID: {}", userId, e);
-            throw new TellInboxCustomException.ApplicationServerException("خطا در دریافت لینک تصویر پروفایل: " + e.getMessage());
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.profile_image_link_error") + e.getMessage());
         }
     }
 
@@ -162,19 +162,19 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.فایل_تصویر_خالی_است"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.image_file_empty"));
         }
 
         // Check file size (max 5MB)
         long maxSize = 5 * 1024 * 1024; // 5MB
         if (file.getSize() > maxSize) {
-             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.حجم_فایل_نباید_بیشتر_از_5_مگابایت_باشد"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.file_size_exceeds_5mb"));
         }
 
         // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !isValidImageType(contentType)) {
-             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.فایل_باید_از_نوع_تصویر_باشد_jpeg_png_gif_webp"));
+             throw new  TellInboxCustomException.ValidationException(getMessage("error.ValidationException.file_must_be_image"));
         }
     }
 
