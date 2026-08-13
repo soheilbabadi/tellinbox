@@ -88,7 +88,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Creating new category: {}", category.getTitle());
         
         if (categoryRepository.existsByTitle(category.getTitle())) {
-            throw new TellInboxCustomException.ValidationException(getMessage("error.ResourceAlreadyExistsException.عنوان_دسته_بندی_تکراری_است"));
+            throw new TellInboxCustomException.ValidationException(getMessage("error.ResourceAlreadyExistsException.category_title_duplicate"));
         }
         
         category.setCreatedAt(LocalDateTime.now());
@@ -105,7 +105,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Updating category: {}", categoryId);
         
         FeedbackCategoryModel existingCategory = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.category_not_found")));
         
         if (updatedCategory.getTitle() != null) {
             existingCategory.setTitle(updatedCategory.getTitle());
@@ -148,7 +148,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Soft deleting category: {}", categoryId);
         
         FeedbackCategoryModel category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.category_not_found")));
         
         category.setIsDeleted(true);
         category.setDeletedAt(LocalDateTime.now());
