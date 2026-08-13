@@ -6,6 +6,7 @@ import com.tellinbox.tellinbox_api.feedback.model.FeedbackCategoryModel;
 import com.tellinbox.tellinbox_api.feedback.repository.FeedbackCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
 
+    private final MessageSource messageSource;
     private final FeedbackCategoryRepository categoryRepository;
 
     @Override
@@ -86,7 +88,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Creating new category: {}", category.getTitle());
         
         if (categoryRepository.existsByTitle(category.getTitle())) {
-            throw new TellInboxCustomException.ResourceAlreadyExistsException("عنوان دسته‌بندی تکراری است");
+            throw new ResourceAlreadyExistsException(getMessage("error.ResourceAlreadyExistsException.عنوان_دسته_بندی_تکراری_است"));
         }
         
         category.setCreatedAt(LocalDateTime.now());
@@ -103,7 +105,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Updating category: {}", categoryId);
         
         FeedbackCategoryModel existingCategory = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("دسته‌بندی یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
         
         if (updatedCategory.getTitle() != null) {
             existingCategory.setTitle(updatedCategory.getTitle());
@@ -146,7 +148,7 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         log.info("Soft deleting category: {}", categoryId);
         
         FeedbackCategoryModel category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("دسته‌بندی یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.دسته_بندی_یافت_نشد")));
         
         category.setIsDeleted(true);
         category.setDeletedAt(LocalDateTime.now());
@@ -154,4 +156,15 @@ public class FeedbackCategoryServiceImpl implements FeedbackCategoryService {
         
         log.info("Category soft deleted successfully: {}", categoryId);
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

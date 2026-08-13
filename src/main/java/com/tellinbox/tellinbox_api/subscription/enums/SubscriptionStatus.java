@@ -20,4 +20,24 @@ public enum SubscriptionStatus {
     public boolean isActive() {
         return this == ACTIVE;
     }
+
+    public static SubscriptionStatus fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (SubscriptionStatus item : SubscriptionStatus.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
 }

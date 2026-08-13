@@ -6,6 +6,7 @@ import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProfilePictureServiceImpl implements ProfilePictureService {
 
+    private final MessageSource messageSource;
     private final MinioClient minioClient;
     private final UserRepository userRepository;
 
@@ -45,7 +47,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
             // Ensure bucket exists
             ensureBucketExists();
@@ -95,7 +97,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
         try {
             // Find user
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
             String currentProfilePictureUrl = user.getProfilePictureUrl();
             
@@ -137,7 +139,7 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
 
         try {
             UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
             String profilePictureUrl = user.getProfilePictureUrl();
             
@@ -160,19 +162,19 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new TellInboxCustomException.ValidationException("فایل تصویر خالی است");
+            throw new ValidationException(getMessage("error.ValidationException.فایل_تصویر_خالی_است"));
         }
 
         // Check file size (max 5MB)
         long maxSize = 5 * 1024 * 1024; // 5MB
         if (file.getSize() > maxSize) {
-            throw new TellInboxCustomException.ValidationException("حجم فایل نباید بیشتر از 5 مگابایت باشد");
+            throw new ValidationException(getMessage("error.ValidationException.حجم_فایل_نباید_بیشتر_از_5_مگابایت_باشد"));
         }
 
         // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !isValidImageType(contentType)) {
-            throw new TellInboxCustomException.ValidationException("فایل باید از نوع تصویر باشد (JPEG, PNG, GIF, WebP)");
+            throw new ValidationException(getMessage("error.ValidationException.فایل_باید_از_نوع_تصویر_باشد_jpeg_png_gif_webp"));
         }
     }
 
@@ -239,4 +241,15 @@ public class ProfilePictureServiceImpl implements ProfilePictureService {
             );
         }
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

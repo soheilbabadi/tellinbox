@@ -7,6 +7,7 @@ import com.tellinbox.tellinbox_api.invitation.repository.InvitationRepository;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class InvitationServiceImpl implements InvitationService {
 
+    private final MessageSource messageSource;
     private final InvitationRepository invitationRepository;
     private final UserRepository userRepository;
 
@@ -32,7 +34,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto createInvitation(UUID userId, Integer maxUses, Integer expiresInSeconds) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.user_not_found")));
 
         String token = generateSecureToken();
         
@@ -53,7 +55,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto updateInvitation(String token, Integer maxUses, Integer expiresInSeconds) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
 
         if (maxUses != null) {
             invitation.setMaxUses(maxUses);
@@ -78,7 +80,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto getInvitationByToken(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
         return toDto(invitation);
     }
 
@@ -94,7 +96,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public void deactivateInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
         invitation.setActive(false);
         invitationRepository.save(invitation);
     }
@@ -102,7 +104,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public void activateInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invitation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
         invitation.setActive(true);
         invitationRepository.save(invitation);
     }
@@ -110,18 +112,18 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public Invitation validateAndUseInvitation(String token) {
         Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("Invalid invitation token"));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invalid_invitation_token")));
 
         if (!invitation.isActive()) {
-            throw new TellInboxCustomException.ValidationException("Invitation is no longer active");
+            throw new ValidationException(getMessage("error.ValidationException.invitation_is_no_longer_active"));
         }
 
         if (invitation.getExpiresAt() != null && LocalDateTime.now().isAfter(invitation.getExpiresAt())) {
-            throw new TellInboxCustomException.ValidationException("Invitation has expired");
+            throw new ValidationException(getMessage("error.ValidationException.invitation_has_expired"));
         }
 
         if (invitation.getMaxUses() != null && invitation.getCurrentUses() >= invitation.getMaxUses()) {
-            throw new TellInboxCustomException.ValidationException("Invitation has reached maximum uses");
+            throw new ValidationException(getMessage("error.ValidationException.invitation_has_reached_maximum_uses"));
         }
 
         invitation.setCurrentUses(invitation.getCurrentUses() + 1);
@@ -149,4 +151,15 @@ public class InvitationServiceImpl implements InvitationService {
                 .currentUses(invitation.getCurrentUses())
                 .build();
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

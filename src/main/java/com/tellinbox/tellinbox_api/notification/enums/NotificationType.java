@@ -22,4 +22,24 @@ public enum NotificationType {
     NotificationType(String persianName) {
         this.persianName = persianName;
     }
+
+    public static NotificationType fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (NotificationType item : NotificationType.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
 }

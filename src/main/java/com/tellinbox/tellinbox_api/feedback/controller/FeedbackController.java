@@ -8,6 +8,7 @@ import com.tellinbox.tellinbox_api.feedback.service.FeedbackService;
 import com.tellinbox.tellinbox_api.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -34,6 +35,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FeedbackController {
 
+    private final MessageSource messageSource;
     private final FeedbackService feedbackService;
 
     // ==================== Core CRUD Operations ====================
@@ -585,6 +587,17 @@ public class FeedbackController {
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getUserId();
         }
-        throw new IllegalStateException("Unable to extract user ID from authentication context");
+        throw new IllegalStateException(getMessage("error.IllegalStateException.unable_to_extract_user_id_from_authentication_context"));
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

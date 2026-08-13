@@ -6,6 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     private final UserRepository userRepository;
+    private final MessageSource messageSource;
 
     /**
      * Loads user by username (can be mobile, email, or username).
@@ -42,7 +44,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             .or(() -> userRepository.findByUsername(identifier))
             .map(user -> {
                 if (user.getIsDeleted() || !user.isActive()) {
-                    throw new UsernameNotFoundException("User account is deactivated or deleted");
+                    throw new UsernameNotFoundException(getMessage("error.UsernameNotFoundException.user_account_is_deactivated_or_deleted"));
                 }
                 
                 return CustomUserDetails.create(
@@ -52,7 +54,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                 );
             })
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with identifier: " + identifier));
+            .orElseThrow(() -> new UsernameNotFoundException(getMessage("error.UsernameNotFoundException.user_not_found_with_identifier", identifier)));
     }
 
     /**
@@ -72,7 +74,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getPasswordHash() != null ? user.getPasswordHash() : "",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
             ))
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
+            .orElseThrow(() -> new UsernameNotFoundException(getMessage("error.UsernameNotFoundException.user_not_found_with_id", userId)));
     }
 
     /**
@@ -89,4 +91,9 @@ public class CustomUserDetailsService implements UserDetailsService {
             .filter(user -> !user.getIsDeleted() && user.isActive())
             .isPresent();
     }
-}
+
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }
