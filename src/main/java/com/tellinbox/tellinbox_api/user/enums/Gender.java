@@ -15,4 +15,24 @@ public enum Gender {
         this.persianName = persianName;
     }
 
+    public static Gender fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (Gender item : Gender.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
+
 }

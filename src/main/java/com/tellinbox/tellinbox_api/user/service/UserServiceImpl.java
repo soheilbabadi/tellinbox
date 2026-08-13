@@ -14,6 +14,7 @@ import com.tellinbox.tellinbox_api.user.model.UserProfileModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final MessageSource messageSource;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -52,12 +54,12 @@ public class UserServiceImpl implements UserService {
 
         // Check if mobile already exists
         if (userRepository.existsByMobile(request.getMobile())) {
-            throw new TellInboxCustomException.DuplicateEntityException("کاربری با این شماره موبایل وجود دارد");
+            throw new DuplicateEntityException(getMessage("error.DuplicateEntityException.کاربری_با_این_شماره_موبایل_وجود_دارد"));
         }
 
         // Check if email already exists (if provided)
         if (request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
-            throw new TellInboxCustomException.DuplicateEntityException("کاربری با این ایمیل وجود دارد");
+            throw new DuplicateEntityException(getMessage("error.DuplicateEntityException.کاربری_با_این_ایمیل_وجود_دارد"));
         }
 
         // Set default profile picture if not provided
@@ -149,7 +151,7 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user profile for ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         // Update fields
         if (dto.getFullName() != null) {
@@ -187,7 +189,7 @@ public class UserServiceImpl implements UserService {
         
         int deleted = userRepository.softDeleteUser(userId);
         if (deleted == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد یا قبلاً حذف شده است");
+            throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد_یا_قبلاً_حذف_شده_است"));
         }
         
         log.info("User soft deleted successfully: {}", userId);
@@ -203,7 +205,7 @@ public class UserServiceImpl implements UserService {
         
         int deleted = userRepository.hardDeleteUser(userId);
         if (deleted == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد");
+            throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد"));
         }
         
         log.info("User hard deleted successfully: {}", userId);
@@ -218,10 +220,10 @@ public class UserServiceImpl implements UserService {
 
         int updated = userRepository.updateUserStatus(userId, status);
         if (updated == 0) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد");
+            throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد"));
         }
 
-        return findById(userId).orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+        return findById(userId).orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
     }
 
     @Override
@@ -230,7 +232,7 @@ public class UserServiceImpl implements UserService {
         log.info("Verifying user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         user.setIsVerified(true);
         UserModel updatedUser = userRepository.save(user);
@@ -245,7 +247,7 @@ public class UserServiceImpl implements UserService {
         log.info("Verifying email for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         user.setIsEmailVerified(true);
         UserModel updatedUser = userRepository.save(user);
@@ -272,12 +274,12 @@ public class UserServiceImpl implements UserService {
         log.info("Updating password for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         // Verify current password if exists
         if (user.getPasswordHash() != null) {
             if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-                throw new TellInboxCustomException.ValidationException("رمز عبور فعلی اشتباه است");
+                throw new ValidationException(getMessage("error.ValidationException.رمز_عبور_فعلی_اشتباه_است"));
             }
         }
 
@@ -294,7 +296,7 @@ public class UserServiceImpl implements UserService {
         log.info("Resetting password for user with ID: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -308,7 +310,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Updating last login for user: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         user.updateLastLogin(ip, userAgent);
         userRepository.save(user);
@@ -410,21 +412,21 @@ public class UserServiceImpl implements UserService {
 
         // Find user by username or mobile
         UserModel user = userRepository.findByUsernameOrMobile(usernameOrMobile, usernameOrMobile)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         // Check if user is deleted
         if (user.getDeletedAt() != null) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر حذف شده است");
+            throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_حذف_شده_است"));
         }
 
         // Check if user is active
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new TellInboxCustomException.ResourceForbiddenException("حساب کاربری غیرفعال است");
+            throw new ResourceForbiddenException(getMessage("error.ResourceForbiddenException.حساب_کاربری_غیرفعال_است"));
         }
 
         // Verify password
         if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new TellInboxCustomException.ResourceUnauthorizedException("رمز عبور اشتباه است");
+            throw new ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.رمز_عبور_اشتباه_است"));
         }
 
         // Create CustomUserDetails
@@ -459,15 +461,15 @@ public class UserServiceImpl implements UserService {
         // Validate refresh token
         UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
         if (userId == null) {
-            throw new TellInboxCustomException.ResourceUnauthorizedException("رفرش توکن نامعتبر است");
+            throw new ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.رفرش_توکن_نامعتبر_است"));
         }
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         // Check if user is deleted or inactive
         if (user.getDeletedAt() != null || user.getStatus() != UserStatus.ACTIVE) {
-            throw new TellInboxCustomException.ResourceForbiddenException("حساب کاربری غیرفعال است");
+            throw new ResourceForbiddenException(getMessage("error.ResourceForbiddenException.حساب_کاربری_غیرفعال_است"));
         }
 
         // Create CustomUserDetails
@@ -480,7 +482,7 @@ public class UserServiceImpl implements UserService {
 
         // Validate refresh token against user
         if (!jwtTokenProvider.validateToken(refreshToken, userDetails)) {
-            throw new TellInboxCustomException.ResourceUnauthorizedException("رفرش توکن نامعتبر یا منقضی شده است");
+            throw new ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.رفرش_توکن_نامعتبر_یا_منقضی_شده_است"));
         }
 
         // Generate new access token
@@ -504,11 +506,11 @@ public class UserServiceImpl implements UserService {
         log.debug("Getting profile for user: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         // Check if user is deleted
         if (user.getDeletedAt() != null) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر حذف شده است");
+            throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_حذف_شده_است"));
         }
 
         return UserDto.from(user);
@@ -520,11 +522,11 @@ public class UserServiceImpl implements UserService {
         log.info("Updating profile for user: {}", userId);
 
         UserModel user = userRepository.findById(userId)
-            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException("کاربر یافت نشد"));
+            .orElseThrow(() -> new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_یافت_نشد")));
 
         // Check if user is deleted
         if (user.getDeletedAt() != null) {
-            throw new TellInboxCustomException.ResourceNotFoundException("کاربر حذف شده است");
+            throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.کاربر_حذف_شده_است"));
         }
 
         // Update fields if provided
@@ -535,7 +537,7 @@ public class UserServiceImpl implements UserService {
             // Check if username is already taken by another user
             Optional<UserModel> existingUser = userRepository.findByUsername(request.getUsername());
             if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
-                throw new TellInboxCustomException.DuplicateEntityException("نام کاربری قبلاً گرفته شده است");
+                throw new DuplicateEntityException(getMessage("error.DuplicateEntityException.نام_کاربری_قبلاً_گرفته_شده_است"));
             }
             user.setUsername(request.getUsername());
         }
@@ -543,7 +545,7 @@ public class UserServiceImpl implements UserService {
             // Check if email is already taken by another user
             Optional<UserModel> existingUser = userRepository.findByEmail(request.getEmail());
             if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
-                throw new TellInboxCustomException.DuplicateEntityException("ایمیل قبلاً ثبت شده است");
+                throw new DuplicateEntityException(getMessage("error.DuplicateEntityException.ایمیل_قبلاً_ثبت_شده_است"));
             }
             user.setEmail(request.getEmail());
         }
@@ -557,14 +559,14 @@ public class UserServiceImpl implements UserService {
             try {
                 user.setGender(com.tellinbox.tellinbox_api.user.enums.Gender.valueOf(request.getGender().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new TellInboxCustomException.ValidationException("جنسیت نامعتبر است");
+                throw new ValidationException(getMessage("error.ValidationException.جنسیت_نامعتبر_است"));
             }
         }
         if (request.getBirthDate() != null) {
             try {
                 user.setBirthDate(LocalDate.parse(request.getBirthDate()));
             } catch (Exception e) {
-                throw new TellInboxCustomException.ValidationException("تاریخ تولد نامعتبر است");
+                throw new ValidationException(getMessage("error.ValidationException.تاریخ_تولد_نامعتبر_است"));
             }
         }
         if (request.getPreferredLanguage() != null) {
@@ -634,8 +636,13 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // Generate tokens
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        String accessToken = jwtTokenProvider.generateToken(userDetails);
+        CustomUserDetails userDetails = CustomUserDetails.create(
+            user.getId(),
+            user.getMobile(),
+            null,
+            java.util.Collections.emptyList()
+        );
+        String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
         log.info("User authenticated successfully with OTP: {}", mobile);
@@ -644,8 +651,8 @@ public class UserServiceImpl implements UserService {
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .tokenType("Bearer")
-            .expiresIn(86400L) // 24 hours
-            .user(UserDto.from(user))
+            .expiresIn(jwtTokenProvider.getJwtExpirationMs())
+            .userId(user.getId().toString())
             .build();
     }
 
@@ -659,6 +666,17 @@ public class UserServiceImpl implements UserService {
         // TODO: Implement Google token verification using google-auth-library
         // For now, this is a placeholder that will be implemented when Google OAuth dependencies are added
         
-        throw new TellInboxCustomException.ResourceNotFoundException("ورود با گوگل هنوز پیاده‌سازی نشده است. لطفا از روش‌های دیگر ورود استفاده کنید.");
+        throw new ResourceNotFoundException(getMessage("error.ResourceNotFoundException.ورود_با_گوگل_هنوز_پیاده_سازی_نشده_است_لطفا_از_روش_های_دیگر_ورود_استفاده_کنید"));
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

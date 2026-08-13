@@ -21,4 +21,24 @@ public enum UserRole {
     public String getDescription() {
         return description;
     }
+
+    public static UserRole fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (UserRole item : UserRole.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getDisplayName() != null && item.getDisplayName().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
 }

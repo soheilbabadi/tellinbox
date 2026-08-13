@@ -18,4 +18,24 @@ public enum FeedbackCategoryType {
     FeedbackCategoryType(String persianName) {
         this.persianName = persianName;
     }
+
+    public static FeedbackCategoryType fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (FeedbackCategoryType item : FeedbackCategoryType.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
 }

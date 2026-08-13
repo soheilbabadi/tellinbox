@@ -220,7 +220,7 @@ public class JwtTokenProvider {
         if (validateToken(refreshToken, userDetails)) {
             return generateAccessToken(userDetails);
         }
-        throw new TellInboxCustomException.ResourceUnauthorizedException("Invalid refresh token");
+        throw new ResourceUnauthorizedException(getMessage("error.ResourceUnauthorizedException.invalid_refresh_token"));
     }
 
     /**
@@ -236,4 +236,9 @@ public class JwtTokenProvider {
     public long getJwtRefreshExpirationMs() {
         return jwtRefreshExpirationMs;
     }
-}
+
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

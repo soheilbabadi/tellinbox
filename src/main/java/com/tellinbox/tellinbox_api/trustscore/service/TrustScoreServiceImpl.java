@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class TrustScoreServiceImpl implements TrustScoreService {
 
+    private final MessageSource messageSource;
     private final FeedbackRepository feedbackRepository;
     private final UserRepository userRepository;
 
@@ -294,4 +296,15 @@ public class TrustScoreServiceImpl implements TrustScoreService {
                         .build())
                 .build();
     }
-}
+
+    /**
+     * Get localized message from messages.properties
+     * @param key Message key
+     * @param args Optional arguments for message formatting
+     * @return Localized message
+     */
+    protected String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
+    }
+
+    }

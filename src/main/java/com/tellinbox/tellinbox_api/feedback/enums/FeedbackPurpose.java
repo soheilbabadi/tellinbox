@@ -19,4 +19,24 @@ public enum FeedbackPurpose {
         this.persianName = persianName;
     }
 
+    public static FeedbackPurpose fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (FeedbackPurpose item : FeedbackPurpose.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
+
 }

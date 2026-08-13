@@ -19,4 +19,24 @@ public enum QuestionType {
     QuestionType(String persianName) {
         this.persianName = persianName;
     }
+
+    public static QuestionType fromString(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+        
+        String normalizedInput = input.trim();
+
+        for (QuestionType item : QuestionType.values()) {
+            if (item.name().equalsIgnoreCase(normalizedInput)) {
+                return item;
+            }
+            
+            if (item.getPersianName() != null && item.getPersianName().equals(normalizedInput)) {
+                return item;
+            }
+        }
+        
+        return null;
+    }
 }
