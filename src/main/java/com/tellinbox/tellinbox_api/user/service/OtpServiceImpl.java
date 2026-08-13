@@ -177,7 +177,7 @@ public class OtpServiceImpl implements OtpService {
 
         // Authenticate user
         JwtAuthenticationResponse authResponse = userService.authenticateWithOtp(identifier);
-
+var user=userRepository.findById(UUID.fromString(authResponse.getUserId())).get();
         log.info("User authenticated successfully with OTP: {}", maskIdentifier(identifier));
 
         return AuthResponse.builder()
@@ -185,7 +185,7 @@ public class OtpServiceImpl implements OtpService {
             .refreshToken(authResponse.getRefreshToken())
             .tokenType(authResponse.getTokenType())
             .expiresIn(authResponse.getExpiresIn())
-            .user(authResponse.getUser())
+            .user(UserDto.from(user))
             .message("ورود با موفقیت انجام شد")
             .build();
     }
