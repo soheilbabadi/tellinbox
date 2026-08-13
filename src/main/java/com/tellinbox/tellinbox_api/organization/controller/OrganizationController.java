@@ -29,7 +29,7 @@ public class OrganizationController {
     @PostMapping
     public ResponseEntity<OrganizationResponse> createOrganization(
             @Valid @RequestBody CreateOrganizationRequest request,
-            @AuthenticationPrincipal(expression = "id") UUID userId) {
+            @AuthenticationPrincipal(expression = "userId") UUID userId) {
         return ResponseEntity.ok(organizationService.createOrganization(request, userId));
     }
 
