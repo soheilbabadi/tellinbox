@@ -273,7 +273,12 @@ public class FeedbackServiceImpl implements FeedbackService {
             .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         if (!feedback.canRespond()) {
-            throw new IllegalStateException(getMessage("error.IllegalStateException.this_feedback_cannot_be_answered"));
+            throw new TellInboxCustomException.ValidationException(getMessage("error.ValidationException.feedback_already_answered"));
+        }
+
+        // Validate response content
+        if (responseContent == null || responseContent.trim().isEmpty()) {
+            throw new TellInboxCustomException.ValidationException(getMessage("error.ValidationException.response_content_cannot_be_empty"));
         }
 
         // Create response
@@ -299,7 +304,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.feedback_not_found")));
 
         if (feedback.getResponse() == null) {
-            throw new IllegalStateException(getMessage("error.IllegalStateException.no_reply_for_this_feedback"));
+            throw new TellInboxCustomException.ValidationException(getMessage("error.IllegalStateException.no_reply_for_this_feedback"));
         }
 
         feedback.getResponse().updateResponse(responseContent);
@@ -490,5 +495,4 @@ public class FeedbackServiceImpl implements FeedbackService {
     protected String getMessage(String key, Object... args) {
         return messageSource.getMessage(key, args, java.util.Locale.forLanguageTag("fa"));
     }
-
-    }
+}

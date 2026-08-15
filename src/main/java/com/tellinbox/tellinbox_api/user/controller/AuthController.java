@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.user.controller;
 
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.security.CustomUserDetails;
 import com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse;
 import com.tellinbox.tellinbox_api.user.dto.LoginRequest;
@@ -114,7 +115,7 @@ public class AuthController {
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getUserId();
         }
-        throw new IllegalStateException(getMessage("error.IllegalStateException.unable_to_extract_user_id_from_authentication_context"));
+        throw new TellInboxCustomException.ApplicationServerException(getMessage("error.IllegalStateException.unable_to_extract_user_id_from_authentication_context"));
     }
 
     /**

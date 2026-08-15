@@ -1,11 +1,11 @@
 package com.tellinbox.tellinbox_api.security;
 
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +44,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             .or(() -> userRepository.findByUsername(identifier))
             .map(user -> {
                 if (user.getIsDeleted() || !user.isActive()) {
-                    throw new UsernameNotFoundException(getMessage("error.UsernameNotFoundException.user_account_is_deactivated_or_deleted"));
+                    throw new TellInboxCustomException.ResourceForbiddenException(getMessage("error.UsernameNotFoundException.user_account_is_deactivated_or_deleted"));
                 }
                 
                 return CustomUserDetails.create(
@@ -54,7 +54,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                 );
             })
-            .orElseThrow(() -> new UsernameNotFoundException(getMessage("error.UsernameNotFoundException.user_not_found_with_identifier", identifier)));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.UsernameNotFoundException.user_not_found_with_identifier", identifier)));
     }
 
     /**
@@ -74,7 +74,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getPasswordHash() != null ? user.getPasswordHash() : "",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
             ))
-            .orElseThrow(() -> new UsernameNotFoundException(getMessage("error.UsernameNotFoundException.user_not_found_with_id", userId)));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.UsernameNotFoundException.user_not_found_with_id", userId)));
     }
 
     /**

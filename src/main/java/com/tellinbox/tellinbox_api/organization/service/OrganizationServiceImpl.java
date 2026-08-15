@@ -49,13 +49,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationResponse createOrganization(CreateOrganizationRequest request, UUID userId) {
         // Check if name already exists
         if (organizationRepository.existsByName(request.getName())) {
-            throw new TellInboxCustomException("نام سازمان قبلاً ثبت شده است");
+            throw new TellInboxCustomException.DuplicateEntityException(getMessage("error.DuplicateEntityException.organization_name_exists"));
         }
 
         // Check if registration number already exists
         if (request.getRegistrationNumber() != null && 
             organizationRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
-            throw new TellInboxCustomException("شماره ثبت قبلاً استفاده شده است");
+            throw new TellInboxCustomException.DuplicateEntityException(getMessage("error.DuplicateEntityException.registration_number_exists"));
         }
 
         // Create organization
@@ -92,10 +92,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Transactional(readOnly = true)
     public OrganizationResponse getOrganizationById(UUID id) {
         OrganizationModel organization = organizationRepository.findById(id)
-            .orElseThrow(() -> new TellInboxCustomException("سازمان مورد نظر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_not_found")));
 
         if (organization.getIsDeleted()) {
-            throw new TellInboxCustomException("این سازمان حذف شده است");
+            throw new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_deleted"));
         }
 
         long membersCount = organizationMemberRepository.countActiveMembers(id);
@@ -132,10 +132,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Transactional
     public OrganizationResponse updateOrganization(UUID id, CreateOrganizationRequest request) {
         OrganizationModel organization = organizationRepository.findById(id)
-            .orElseThrow(() -> new TellInboxCustomException("سازمان مورد نظر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_not_found")));
 
         if (organization.getIsDeleted()) {
-            throw new TellInboxCustomException("این سازمان حذف شده است");
+            throw new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_deleted"));
         }
 
         // Update fields
@@ -159,10 +159,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Transactional
     public OrganizationResponse uploadLogo(UUID organizationId, MultipartFile file) {
         OrganizationModel organization = organizationRepository.findById(organizationId)
-            .orElseThrow(() -> new TellInboxCustomException("سازمان مورد نظر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_not_found")));
 
         if (organization.getIsDeleted()) {
-            throw new TellInboxCustomException("این سازمان حذف شده است");
+            throw new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_deleted"));
         }
 
         try {
@@ -193,7 +193,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         } catch (IOException e) {
             log.error("Error uploading logo", e);
-            throw new TellInboxCustomException("خطا در آپلود لوگو");
+            throw new TellInboxCustomException.ApplicationServerException(getMessage("error.ApplicationServerException.logo_upload_error"));
         }
     }
 
@@ -270,14 +270,14 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void sendInvitation(SendInvitationRequest request, UUID senderId) {
         // Verify sender is admin/owner of organization
         OrganizationModel organization = organizationRepository.findById(request.getOrganizationId())
-            .orElseThrow(() -> new TellInboxCustomException("سازمان مورد نظر یافت نشد"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.organization_not_found")));
 
         // Check if sender is member with appropriate role
         var senderMember = organizationMemberRepository.findByOrganizationIdAndUserId(
             request.getOrganizationId(), senderId);
         
         if (senderMember.isEmpty() || !isAllowedToSendInvitation(senderMember.get().getRole())) {
-            throw new TellInboxCustomException("شما مجوز ارسال دعوتنامه ندارید");
+            throw new TellInboxCustomException.AccessDeniedException(getMessage("error.AccessDeniedException.invitation_permission_denied"));
         }
 
         // Create invitation
@@ -301,18 +301,18 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Transactional
     public void acceptInvitation(String token, UUID userId) {
         Invitation invitation = invitationRepository.findByToken(token)
-            .orElseThrow(() -> new TellInboxCustomException("دعوتنامه نامعتبر است"));
+            .orElseThrow(() -> new TellInboxCustomException.ResourceNotFoundException(getMessage("error.ResourceNotFoundException.invitation_not_found")));
 
         if (!invitation.isActive()) {
-            throw new TellInboxCustomException("این دعوتنامه غیرفعال است");
+            throw new TellInboxCustomException.ResourceForbiddenException(getMessage("error.ResourceForbiddenException.invitation_inactive"));
         }
 
         if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new TellInboxCustomException("مهلت این دعوتنامه به پایان رسیده است");
+            throw new TellInboxCustomException.ResourceForbiddenException(getMessage("error.ResourceForbiddenException.invitation_expired"));
         }
 
         if (invitation.getMaxUses() != null && invitation.getCurrentUses() >= invitation.getMaxUses()) {
-            throw new TellInboxCustomException("ظرفیت این دعوتنامه تکمیل شده است");
+            throw new TellInboxCustomException.ResourceForbiddenException(getMessage("error.ResourceForbiddenException.invitation_max_uses_reached"));
         }
 
         // TODO: Fetch user and add to organization

@@ -1,5 +1,6 @@
 package com.tellinbox.tellinbox_api.feedback.controller;
 
+import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackRequest;
 import com.tellinbox.tellinbox_api.feedback.dto.FeedbackResponse;
 import com.tellinbox.tellinbox_api.feedback.enums.FeedbackStatus;
@@ -588,7 +589,7 @@ public class FeedbackController {
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getUserId();
         }
-        throw new IllegalStateException(getMessage("error.IllegalStateException.unable_to_extract_user_id_from_authentication_context"));
+        throw new TellInboxCustomException.ApplicationServerException(getMessage("error.IllegalStateException.unable_to_extract_user_id_from_authentication_context"));
     }
 
     /**
