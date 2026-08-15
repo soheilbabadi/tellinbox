@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.user.service;
 
-import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse;
 import com.tellinbox.tellinbox_api.user.dto.AuthResponse;
 import com.tellinbox.tellinbox_api.user.dto.OtpSendRequest;

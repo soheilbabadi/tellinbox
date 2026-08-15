@@ -9,7 +9,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.exception.TellInboxCustomException;
 
 import javax.crypto.SecretKey;
 import java.util.Date;

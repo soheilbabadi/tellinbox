@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.user.service;
 
-import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.security.CustomUserDetails;
 import com.tellinbox.tellinbox_api.security.JwtAuthenticationResponse;
 import com.tellinbox.tellinbox_api.security.JwtTokenProvider;
@@ -12,7 +12,6 @@ import com.tellinbox.tellinbox_api.user.enums.UserStatus;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import com.tellinbox.tellinbox_api.user.model.UserProfileModel;
 import com.tellinbox.tellinbox_api.user.repository.UserRepository;
-import io.micrometer.core.instrument.config.validate.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;

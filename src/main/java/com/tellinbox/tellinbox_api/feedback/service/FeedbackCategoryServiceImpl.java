@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.feedback.service;
 
-import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.feedback.dto.CategoryScoreDto;
 import com.tellinbox.tellinbox_api.feedback.model.FeedbackCategoryModel;
 import com.tellinbox.tellinbox_api.feedback.repository.FeedbackCategoryRepository;

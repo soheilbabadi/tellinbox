@@ -1,6 +1,6 @@
 package com.tellinbox.tellinbox_api.invitation.service;
 
-import com.tellinbox.tellinbox_api.common.exception.TellInboxCustomException;
+import com.tellinbox.tellinbox_api.exception.TellInboxCustomException;
 import com.tellinbox.tellinbox_api.invitation.dto.InvitationDto;
 import com.tellinbox.tellinbox_api.invitation.entity.Invitation;
 import com.tellinbox.tellinbox_api.invitation.repository.InvitationRepository;

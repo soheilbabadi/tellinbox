@@ -1,6 +1,7 @@
 package com.tellinbox.tellinbox_api.questionnaire.entity;
 
 import com.tellinbox.tellinbox_api.organization.entity.OrganizationModel;
+import com.tellinbox.tellinbox_api.questionnaire.enums.QuestionnaireStatus;
 import com.tellinbox.tellinbox_api.user.model.UserModel;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,7 +37,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(callSuper = false)
-@ToString(exclude = {"questions", "responses"})
+@ToString(exclude = {"questions", "responses", "organization", "owner"})
 public class QuestionnaireModel {
 
     @Id
